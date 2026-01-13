@@ -1,0 +1,57 @@
+[
+  {
+    "question": "TCP 연결 설정 시 사용하는 3-way handshake의 첫 번째 단계는 무엇인가?",
+    "options": [
+      "클라이언트가 SYN 세그먼트를 서버로 보낸다",
+      "서버가 ACK 세그먼트를 클라이언트로 보낸다",
+      "클라이언트가 FIN 세그먼트를 보낸다",
+      "서버가 SYNACK 세그먼트를 클라이언트로 보낸다"
+    ],
+    "answer": 0,
+    "explanation": "3-way handshake의 첫 번째 단계는 클라이언트가 SYN 세그먼트를 서버로 보내 초기 시퀀스 번호를 지정하는 것이다."
+  },
+  {
+    "question": "TCP가 데이터 전송에서 신뢰성을 보장하기 위해 사용하는 기능이 아닌 것은?",
+    "options": [
+      "순서대로 바이트 스트림 전송",
+      "연결 지향성 (connection-oriented)",
+      "메시지 경계(message boundaries) 유지",
+      "플로우 제어(flow control)"
+    ],
+    "answer": 2,
+    "explanation": "TCP는 신뢰성 있고 순서대로 바이트 스트림을 전송하지만 메시지 경계는 유지하지 않는다. 즉, 메시지 단위 전송이 아닌 바이트 스트림 전송이다."
+  },
+  {
+    "question": "TCP Round Trip Time(RTT) 추정 시 사용하는 공식은 무엇인가?",
+    "options": [
+      "EstimatedRTT = (1 - a) * EstimatedRTT + a * SampleRTT",
+      "TimeoutInterval = EstimatedRTT - DevRTT",
+      "DevRTT = a * DevRTT - (1 - a) * SampleRTT",
+      "SampleRTT = EstimatedRTT + TimeoutInterval"
+    ],
+    "answer": 0,
+    "explanation": "EstimatedRTT는 새로운 SampleRTT에 가중치를 두어 과거의 추정 RTT와 결합하는 지수 가중 이동평균(EXP weighted moving average) 방식으로 계산된다."
+  },
+  {
+    "question": "TCP에서 빠른 재전송(Fast Retransmit)이 발생하는 조건은?",
+    "options": [
+      "타임아웃이 발생했을 때",
+      "송신자가 3번 연속으로 동일한 ACK를 받았을 때",
+      "연결이 닫힐 때",
+      "ACK가 전혀 오지 않을 때"
+    ],
+    "answer": 1,
+    "explanation": "Fast Retransmit은 송신자가 동일한 ACK를 3번 연속 받아서 누락된 세그먼트가 있다고 판단되면 타임아웃을 기다리지 않고 즉시 재전송하는 메커니즘이다."
+  },
+  {
+    "question": "TCP 흐름제어(Flow Control)에서 수신 윈도우(RcvWindow)의 의미는?",
+    "options": [
+      "송신자의 버퍼 크기",
+      "수신자의 버퍼 중 송신자가 보내도 되는 남은 공간 크기",
+      "수신자가 받은 데이터의 총량",
+      "현재 수신 버퍼 크기에서 송신 버퍼 크기를 뺀 값"
+    ],
+    "answer": 1,
+    "explanation": "RcvWindow는 수신자의 버퍼 중에서 아직 사용하지 않은 공간, 즉 송신자가 현재 보낼 수 있는 최대 데이터 크기를 나타내어 버퍼 오버플로우를 방지한다."
+  }
+]

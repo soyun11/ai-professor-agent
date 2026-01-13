@@ -1,0 +1,57 @@
+[
+  {
+    "question": "WebRTC가 지원하는 주요 브라우저는 무엇인가?",
+    "options": [
+      "Internet Explorer, Safari, Edge",
+      "Firefox, Opera, Chrome (데스크탑 및 안드로이드)",
+      "Safari, Firefox, Edge",
+      "Chrome, Internet Explorer, Opera"
+    ],
+    "answer": 1,
+    "explanation": "WebRTC는 Firefox, Opera, Chrome 브라우저에서 데스크탑과 안드로이드 환경을 지원한다."
+  },
+  {
+    "question": "WebRTC의 주요 구성 요소가 아닌 것은 무엇인가?",
+    "options": [
+      "getUserMedia - 미디어 디바이스 접근",
+      "RTCPeerConnection - 오디오/비디오 통신 활성화",
+      "RTCDataChannel - 양방향 데이터 통신 허용",
+      "WebSocket - 시그널링 및 트래픽 릴레이"
+    ],
+    "answer": 3,
+    "explanation": "WebSocket은 WebRTC의 시그널링과는 별도의 프로토콜이며, WebRTC 구성 요소에 포함되지 않는다."
+  },
+  {
+    "question": "STUN 서버의 역할은 무엇인가?",
+    "options": [
+      "Peer 간 직접 미디어 통신",
+      "피어 트래픽 릴레이 및 중계",
+      "NAT 환경에서 자신의 공인 IP와 포트 정보 확인",
+      "브라우저 렌더링 가속"
+    ],
+    "answer": 2,
+    "explanation": "STUN은 NAT 뒤에 있는 피어가 공인 IP와 포트 정보를 얻을 수 있도록 돕는다."
+  },
+  {
+    "question": "TURN 서버가 필요한 상황은 언제인가?",
+    "options": [
+      "피어가 동일한 로컬 네트워크에 있을 때",
+      "직접 소켓 사용이 가능할 때",
+      "피어가 서로 다른 네트워크에 있고 직접 연결이 불가능할 때",
+      "브라우저가 WebRTC를 지원하지 않을 때"
+    ],
+    "answer": 2,
+    "explanation": "TURN 서버는 NAT나 방화벽으로 인해 피어간 직접 연결이 불가능할 때 트래픽을 중계하기 위해 사용된다."
+  },
+  {
+    "question": "WebRTC에서 getUserMedia API의 역할은 무엇인가?",
+    "options": [
+      "미디어 스트림 생성 및 전송",
+      "카메라와 마이크 등의 미디어 디바이스 접근 권한 요청",
+      "피어 간 미디어 스트림 교환",
+      "네트워크 트래픽 릴레이"
+    ],
+    "answer": 1,
+    "explanation": "getUserMedia는 카메라, 마이크에 접근하여 오디오 및 비디오 미디어 스트림을 얻기 위한 API이다."
+  }
+]
