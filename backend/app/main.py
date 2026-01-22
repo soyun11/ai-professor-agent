@@ -17,7 +17,7 @@ from .models import PageAnchor
 from fastapi import Body 
 
 import os, json
-from typing import Any
+from typing import Set, List, Dict, Any, Optional
 import numpy as np
 from openai import OpenAI
 from pdf2image import convert_from_path
@@ -915,13 +915,24 @@ def get_pages_info(lecture_id: int):
 # =============================================================================
 # Auto Sync (임베딩 기반 페이지-오디오 매칭)
 # =============================================================================
-
 @app.post("/lectures/{lecture_id}/auto_sync")
 def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
     """
-    임베딩 기반으로 PDF 페이지와 오디오 자막을 자동 매칭하여 앵커를 생성합니다.
+    [최종] 임베딩(Embedding) + 키워드 스포팅(Keyword Spotting) + 신뢰도 기반 보간법(DWT) 적용
     """
+    # 1. 내부 유틸 함수 정의
+    def clean_text_local(s:str) -> str:
+        import re
+        s = (s or "").strip().lower()
+        s = re.sub(r"\s+", " ", s)
+        s = re.sub(r"[^0-9a-z가-힣 ]+", "", s)
+        return s
     
+    def get_keywords_local(text: str) -> set:
+        normalized = clean_text_local(text)
+        return set([w for w in normalized.split() if len(w) >= 2])
+    
+    # 2. 데이터 로드 및 전처리
     out_dir = _lecture_data_dir(lecture_id)
     pages_json_path = out_dir / "pages.json"
     if not pages_json_path.exists():
@@ -941,27 +952,25 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
     if not transcript_rows:
         raise HTTPException(status_code=400, detail="Transcript가 없습니다. 먼저 /transcribe를 실행하세요.")
     
-    # 페이지별 텍스트 (빈 텍스트는 placeholder로 대체)
+    # 페이지 텍스트 준비
     page_texts = []
     for p in pages:
         text = (p.get("text") or "").strip()
         if len(text) < 50 and p.get("words"):
             text = " ".join([w.get("t", "") for w in p.get("words", [])])
         text = text.strip()
-        # ✅ 빈 텍스트 방지: 최소한의 placeholder
         if not text or len(text) < 5:
             text = f"페이지 {p.get('page', 0)} 내용"
         page_texts.append(text[:2000])
     
-    # 30초 단위로 자막 그룹화
+    # 자막 그룹화 (10초 단위)
     segment_groups = []
     current_group = {"start": 0, "end": 0, "texts": []}
-    group_duration = 30
+    group_duration = 10 
     
     for seg in transcript_rows:
         seg_text = (seg.text or "").strip()
-        if not seg_text:
-            continue  # ✅ 빈 자막 스킵
+        if not seg_text: continue
             
         if not current_group["texts"]:
             current_group["start"] = seg.start
@@ -971,7 +980,7 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
         
         if seg.end - current_group["start"] >= group_duration:
             group_text = " ".join(current_group["texts"]).strip()
-            if group_text:  # ✅ 빈 그룹 방지
+            if group_text:
                 segment_groups.append({
                     "start": current_group["start"],
                     "end": current_group["end"],
@@ -981,7 +990,7 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
     
     if current_group["texts"]:
         group_text = " ".join(current_group["texts"]).strip()
-        if group_text:  # ✅ 빈 그룹 방지
+        if group_text:
             segment_groups.append({
                 "start": current_group["start"],
                 "end": current_group["end"],
@@ -991,7 +1000,7 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
     if not segment_groups:
         raise HTTPException(status_code=400, detail="자막 그룹을 생성할 수 없습니다.")
     
-    # 임베딩 생성 - 빈 텍스트 필터링
+    # 3. 임베딩 생성
     all_texts = []
     for t in page_texts:
         clean_t = t.strip()
@@ -1001,19 +1010,18 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
         clean_t = g["text"][:2000].strip()
         all_texts.append(clean_t if clean_t else "빈 구간")
     
-    # ✅ 최종 검증: 모든 텍스트가 비어있지 않은지 확인
     all_texts = [t if t.strip() else "placeholder" for t in all_texts]
     
-    # 페이지 텍스트 + 자막 텍스트 모두 임베딩
     try:
         all_embeddings = get_embeddings_from_gpu(all_texts)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Embedding 생성 실패: {e}")
+
     num_pages = len(page_texts)
     page_embeddings = all_embeddings[:num_pages]
     segment_embeddings = all_embeddings[num_pages:]
     
-    # 코사인 유사도 행렬
+    # 4. 유사도 매트릭스 계산
     page_vecs = np.array(page_embeddings, dtype=np.float32)
     seg_vecs = np.array(segment_embeddings, dtype=np.float32)
     
@@ -1025,9 +1033,27 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
     
     similarity_matrix = np.dot(page_vecs_norm, seg_vecs_norm.T)
     
-    # DP로 순차 매칭
-    num_segments = len(segment_groups)
+    # 5. Keyword Spotting (키워드 가산점)
+    page_keywords = [get_keywords_local(t) for t in page_texts]
+    segment_keywords = [get_keywords_local(g["text"]) for g in segment_groups]
     
+    num_segments = len(segment_groups)
+    keyword_matrix = np.zeros((num_pages, num_segments))
+    
+    for i in range(num_pages):
+        p_set = page_keywords[i]
+        if not p_set: continue
+        for j in range(num_segments):
+            s_set = segment_keywords[j]
+            if not s_set: continue
+            common_words = p_set & s_set
+            if common_words:
+                score_boost = len(common_words) * 0.5
+                keyword_matrix[i][j] = score_boost
+                
+    similarity_matrix += keyword_matrix
+    
+    # 6. DP 알고리즘 (최적 경로 탐색)
     dp = np.full((num_pages + 1, num_segments + 1), -np.inf)
     dp[0][0] = 0
     parent = {}
@@ -1051,11 +1077,121 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
     
     path.reverse()
     
-    page_to_segment = {}
-    for page_idx, seg_idx in path:
-        page_to_segment[page_idx] = seg_idx
+    # 7. [핵심] 신뢰도 기반 보간법 (Interpolation)
+    reliable_anchors = []
+    reliable_anchors.append({"page": 0, "time": 0.0}) # 시작점 고정
     
-    # 기존 앵커 삭제
+    for page_idx, seg_idx in path:
+        score = similarity_matrix[page_idx][seg_idx]
+        THRESHOLD = 1.3 # 임계값 설정
+        
+        if score >= THRESHOLD:
+            time = segment_groups[seg_idx]["start"]
+            reliable_anchors.append({"page": page_idx + 1, "time": time})
+            
+    # 마지막 페이지 처리
+    last_transcript_time = transcript_rows[-1].end if transcript_rows else 0
+    if reliable_anchors[-1]["page"] < num_pages:
+        reliable_anchors.append({"page": num_pages + 1, "time": last_transcript_time})
+
+    # 빈 구간 채우기
+    final_anchors = []
+    for k in range(len(reliable_anchors) - 1):
+        curr_anchor = reliable_anchors[k]
+        next_anchor = reliable_anchors[k+1]
+        
+        start_page = int(curr_anchor["page"])
+        end_page = int(next_anchor["page"])
+        start_time = curr_anchor["time"]
+        end_time = next_anchor["time"]
+        
+        # 현재 앵커 추가
+        if start_page > 0 and start_page <= num_pages:
+             final_anchors.append({"page": start_page, "time": start_time})
+        
+        # 중간 페이지 보간
+        page_gap = end_page - start_page
+        if page_gap > 1:
+            time_gap = end_time - start_time
+            time_per_page = time_gap / page_gap
+            for step in range(1, page_gap):
+                interp_page = start_page + step
+                interp_time = start_time + (time_per_page * step)
+                if interp_page <= num_pages:
+                    final_anchors.append({"page": interp_page, "time": interp_time})
+
+    final_anchors.sort(key=lambda x: x["page"])
+    
+    # Sliding Window 미세 조정 (Fine-tuning)
+    # 목표: 10초 단위로 뭉뚱그려진 시간을 원본 자막(3~5초) 단위로 정밀 보정
+    
+    refined_anchors = []
+    
+    for anchor in final_anchors:
+        page_idx = anchor["page"] - 1 # 0-based index
+        if page_idx < 0 or page_idx >= len(page_texts):
+            refined_anchors.append(anchor)
+            continue
+            
+        coarse_time = anchor["time"]
+        
+        # 1. 탐색 범위 설정 (현재 시간 ±15초)
+        search_start = max(0, coarse_time - 15)
+        search_end = coarse_time + 15
+        
+        # 2. 범위 내의 "원본 자막 세그먼트" 찾기
+        candidates = [
+            seg for seg in transcript_rows 
+            if seg.end >= search_start and seg.start <= search_end
+        ]
+        
+        if not candidates:
+            refined_anchors.append(anchor)
+            continue
+            
+        # 3. 페이지 키워드 가져오기
+        p_keywords = page_keywords[page_idx]
+        if not p_keywords:
+            refined_anchors.append(anchor)
+            continue
+            
+        # 4. 세그먼트별 매칭 점수 계산 (Sliding)
+        best_time = coarse_time
+        max_score = 0
+        found_better = False
+        
+        for seg in candidates:
+            # 자막 세그먼트에서 키워드 추출
+            s_keywords = get_keywords_local(seg.text)
+            
+            # 교집합 개수 확인
+            match_count = len(p_keywords & s_keywords)
+            
+            # 키워드가 발견되면 그 세그먼트의 시작 시간이 더 정확할 확률이 높음
+            if match_count > 0:
+                # 단순히 개수만 보는게 아니라, 원래 시간과 얼마나 가까운지도 가중치로 고려 가능
+                # 여기서는 "키워드가 가장 많이 겹치는 가장 빠른 구간"을 선호하도록 로직 구성
+                if match_count > max_score:
+                    max_score = match_count
+                    best_time = seg.start
+                    found_better = True
+                elif match_count == max_score and match_count > 0:
+                    # 점수가 같다면, 원래 예측 시간(coarse_time)과 더 가까운 쪽 선택
+                    if abs(seg.start - coarse_time) < abs(best_time - coarse_time):
+                        best_time = seg.start
+        
+        # 5. 더 나은 시간이 발견되었고, 오차가 너무 크지 않다면 업데이트
+        if found_better:
+            refined_anchors.append({"page": anchor["page"], "time": best_time})
+        else:
+            refined_anchors.append(anchor)
+
+    # 최종 결과를 refined_anchors로 교체
+    final_anchors = refined_anchors
+    
+    # 미세 조정 완료
+    
+    # 8. 결과 저장
     old_anchors = session.exec(
         select(PageAnchor).where(PageAnchor.lecture_id == lecture_id)
     ).all()
@@ -1063,54 +1199,15 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
         session.delete(anchor)
     session.commit()
     
-    # 새 앵커 생성
     anchors_created = []
-    matched_pages = sorted(page_to_segment.keys())
-    
-    for page_idx in range(num_pages):
-        page_num = page_idx + 1
-        
-        if page_idx in page_to_segment:
-            seg_idx = page_to_segment[page_idx]
-            time = segment_groups[seg_idx]["start"]
-        else:
-            prev_matched = None
-            next_matched = None
-            
-            for mp in matched_pages:
-                if mp < page_idx:
-                    prev_matched = mp
-                elif mp > page_idx and next_matched is None:
-                    next_matched = mp
-                    break
-            
-            if prev_matched is not None and next_matched is not None:
-                prev_time = segment_groups[page_to_segment[prev_matched]]["start"]
-                next_time = segment_groups[page_to_segment[next_matched]]["start"]
-                ratio = (page_idx - prev_matched) / (next_matched - prev_matched)
-                time = prev_time + ratio * (next_time - prev_time)
-            elif prev_matched is not None:
-                prev_time = segment_groups[page_to_segment[prev_matched]]["start"]
-                prev_end = segment_groups[page_to_segment[prev_matched]]["end"]
-                time = prev_end
-            elif next_matched is not None:
-                next_time = segment_groups[page_to_segment[next_matched]]["start"]
-                ratio = page_idx / next_matched if next_matched > 0 else 0
-                time = ratio * next_time
-            else:
-                if transcript_rows:
-                    total_duration = transcript_rows[-1].end
-                    time = (page_idx / num_pages) * total_duration
-                else:
-                    time = 0
-        
-        anchor = PageAnchor(lecture_id=lecture_id, page=page_num, time=float(time))
+    for item in final_anchors:
+        anchor = PageAnchor(lecture_id=lecture_id, page=item["page"], time=float(item["time"]))
         session.add(anchor)
-        anchors_created.append({"page": page_num, "time": float(time)})
+        anchors_created.append(item)
     
     session.commit()
     
-    # 디버깅 정보 저장
+    # 9. 디버그 및 리턴
     debug_info = {
         "lecture_id": lecture_id,
         "num_pages": num_pages,
@@ -1120,7 +1217,6 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
     }
     _save_json(out_dir / "sync_debug.json", debug_info)
     
-    # 유사도 행렬 저장
     similarity_data = {
         "lecture_id": lecture_id,
         "num_pages": num_pages,
@@ -1239,3 +1335,19 @@ def get_similarity_matrix(lecture_id: int, session: Session = Depends(get_sessio
         "matched_path": [],
         "is_embedding_based": False,
     }
+    
+# [추가] 각 단계별 파일이 서버에 존재하는지 확인하여 미리 있는 파일이면, 불러오도록 하는
+@app.get("/lectures/{lecture_id}/status")
+def get_lecture_status(lecture_id: int):
+    """
+    각 단계별 파일이 서버에 존재하는지 확인하여 상태 반환
+    """
+    d = _lecture_data_dir(lecture_id)
+    return {
+        "transcript": (d / "transcript.json").exists(),
+        "ocr": (d / "pages.json").exists(),
+        "index": (d / "index.json").exists(),       # RAG Index 존재 여부
+        "summary": (d / "summary.txt").exists(),    # 요약 존재 여부
+        "quiz": (d / "quiz.json").exists(),         # 퀴즈 존재 여부
+    }
+    

@@ -271,15 +271,37 @@ const goToPageAndPlay = (page: number) => {
       );
       const transcriptText = pageTranscripts.map((t) => t.text).join(" ");
 
-      // 키워드 추출
-      const words = transcriptText.split(/\s+/).filter((w) => w.length > 2);
+      // [수정] 조사/어미 제거 및 불용어 처리 강화
+      const stopWords = new Set([
+        "있습니다", "합니다", "하는", "할", "수", "것입니다", "그리고", "그래서", "하지만", 
+        "저는", "제가", "그", "저", "이", "여러분", "오늘", "이번", "시간", "대해서", "대해",
+        "보시면", "보면", "다음", "이제", "여기", "저기", "그럼", "자", "네", "아", "음"
+      ]);
+
+      const words = transcriptText
+        .replace(/[.,!?'"()\[\]]/g, " ") // 특수문자 제거
+        .split(/\s+/)
+        .map(w => {
+            // 1. 기본적인 조사/어미 제거 (간이 형태소 분석)
+            let clean = w.trim();
+            if (clean.endsWith("은") || clean.endsWith("는") || clean.endsWith("이") || clean.endsWith("가") || 
+                clean.endsWith("을") || clean.endsWith("를") || clean.endsWith("에") || clean.endsWith("의") || 
+                clean.endsWith("로") || clean.endsWith("도")) {
+                clean = clean.slice(0, -1);
+            }
+            if (clean.endsWith("에서") || clean.endsWith("으로")) {
+                clean = clean.slice(0, -2);
+            }
+            return clean;
+        })
+        .filter(w => w.length >= 2) // 2글자 이상만
+        .filter(w => !stopWords.has(w)); // 불용어 제거
+
       const wordFreq: Record<string, number> = {};
       words.forEach((w) => {
-        const normalized = w.replace(/[.,!?'"]/g, "").toLowerCase();
-        if (normalized.length > 2) {
-          wordFreq[normalized] = (wordFreq[normalized] || 0) + 1;
-        }
+        wordFreq[w] = (wordFreq[w] || 0) + 1;
       });
+      
       const keywords = Object.entries(wordFreq)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5)
@@ -372,13 +394,14 @@ const goToPageAndPlay = (page: number) => {
     return () => window.removeEventListener("aiagent:rolechange", onRoleChange);
   }, []);
 
-  // 강의 메타/에셋 로드
+  // 강의 메타/에셋 로드 함수 수정
   const loadLecture = async () => {
     setStatus("강의 불러오는 중...");
     setCitations([]);
     setPdf(null);
     setAudio(null);
 
+    // 1. 로컬 스토리지 캐시 먼저 로드(빠른 화면 표시용)
     loadLectureCache();
 
     try {
@@ -392,55 +415,80 @@ const goToPageAndPlay = (page: number) => {
         const nextAudioUrl = asset?.audio_path ? `${API_BASE}/files/${asset.audio_path}` : "";
         setPdfUrl(nextPdfUrl);
         setAudioUrl(nextAudioUrl);
-      } else {
-        setPdfUrl("");
-        setAudioUrl("");
       }
     } catch {
       setPdfUrl("");
       setAudioUrl("");
     }
 
+    // 3. [핵심] 서버의 작업 상태 확인 (파일 존재 여부 체크)
     try {
-      const tRes = await fetch(`${API_BASE}/lectures/${lectureId}/transcript`);
-      if (tRes.ok) {
-        const tJson = await tRes.json();
-        setTranscript(tJson.segments || []);
-      } else setTranscript([]);
-    } catch {
-      setTranscript([]);
+      const statusRes = await fetch(`${API_BASE}/lectures/${lectureId}/status`);
+      if (statusRes.ok) {
+        const statusData = await statusRes.json();
+        
+        // (A) OCR 및 Index 상태 동기화
+        if (statusData.ocr) setOcrReady(true);
+        if (statusData.index) setIndexReady(true);
+
+        // (B) 각 데이터가 존재하면 내용물 가져오기 (이미 있으면 안 가져와도 되지만 확실하게 하기 위해)
+        
+        // Transcript (STT)
+        if (statusData.transcript) {
+           const tRes = await fetch(`${API_BASE}/lectures/${lectureId}/transcript`);
+           if (tRes.ok) {
+             const tJson = await tRes.json();
+             setTranscript(tJson.segments || []);
+           }
+        }
+
+        // Summary (요약)
+        if (statusData.summary) {
+          const sRes = await fetch(`${API_BASE}/lectures/${lectureId}/summary`);
+          if (sRes.ok) {
+            const sJson = await sRes.json();
+            setSummary(sJson.summary || "");
+          }
+        }
+
+        // Quiz (퀴즈)
+        if (statusData.quiz) {
+          const qRes = await fetch(`${API_BASE}/lectures/${lectureId}/quiz`);
+          if (qRes.ok) {
+            const qJson = await qRes.json();
+            setQuiz(Array.isArray(qJson.quiz) ? qJson.quiz : []);
+          }
+        }
+      }
+    } catch (e) {
+      console.error("상태 확인 실패:", e);
     }
 
+
+    // 4. Anchors 및 Pages Info 로드(기존 로직 유지)
     try {
       const aRes = await fetch(`${API_BASE}/lectures/${lectureId}/anchors`);
       if (aRes.ok) {
         const aJson = await aRes.json();
         setAnchors(aJson.anchors || []);
-        
-        // ✅ 앵커에서 최대 페이지 수 추출 (numPages 설정)
         if (aJson.anchors && aJson.anchors.length > 0) {
           const maxPage = Math.max(...aJson.anchors.map((a: Anchor) => a.page));
-          if (maxPage > 0 && numPages === 0) {
-            setNumPages(maxPage);
-          }
+          if (maxPage > 0) setNumPages(maxPage);
         }
-      } else setAnchors([]);
-    } catch {
-      setAnchors([]);
-    }
+      }
+    } catch {}
 
-    // ✅ pages.json에서 페이지 수 로드 시도
+    // 페이지 수 확인 (OCR 완료 여부 재확인 용도)
     try {
       const pagesRes = await fetch(`${API_BASE}/lectures/${lectureId}/pages_info`);
       if (pagesRes.ok) {
         const pagesData = await pagesRes.json();
-        if (pagesData.num_pages && pagesData.num_pages > 0) {
+        if (pagesData.num_pages > 0) {
           setNumPages(pagesData.num_pages);
+          setOcrReady(true); // 혹시 status API가 실패했어도 여기서 복구
         }
       }
-    } catch {
-      // pages_info API가 없어도 무시
-    }
+    } catch {}
 
     setStatus("✅ 강의 로드 완료");
   };
@@ -509,8 +557,6 @@ const goToPageAndPlay = (page: number) => {
       }
     }
   }, [activeTranscriptIndex, studyMode]);
-// [수정 2] 기존의 "자동 페이지 동기화" useEffect를 찾아서 이걸로 교체하세요
-  // (중요: 기존에 있던 !isAutoSync 없는 버전은 반드시 지워야 합니다!)
   useEffect(() => {
     // anchors가 없거나, 사용자가 수동 조작 중(!isAutoSync)이면 자동 넘김 방지
     if (anchors.length === 0 || !isAutoSync) return;
@@ -610,7 +656,7 @@ const goToPageAndPlay = (page: number) => {
     }
   };
 
-// [수정 1] 기존의 handleCardClick을 찾아서 이걸로 교체하세요
+// [수정] 
   const handleCardClick = async (card: PageCard) => {
     // 1. 먼저 싱크를 켭니다 (해당 시간으로 갈 거니까)
     setIsAutoSync(true);
@@ -631,7 +677,7 @@ const goToPageAndPlay = (page: number) => {
     } catch {}
   };
 
-  // ✅ 히트맵 데이터 로드
+  // 히트맵 데이터 로드
   const loadHeatmapData = async () => {
     if (!lectureId) return;
     setIsLoadingHeatmap(true);
