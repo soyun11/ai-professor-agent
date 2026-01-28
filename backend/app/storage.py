@@ -6,7 +6,7 @@ from typing import Tuple
 
 from fastapi import UploadFile
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent # backend
 DATA_DIR = BASE_DIR / "data"  # backend/data
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -35,6 +35,7 @@ def lecture_dir(lecture_id: int) -> Path:
 
 
 async def save_uploads(lecture_id: int, pdf: UploadFile, audio: UploadFile) -> Tuple[str, str]:
+    """파일을 서버에 저장하고 경로 반환"""
     validate_file_extensions(pdf, audio)
 
     d = lecture_dir(lecture_id)

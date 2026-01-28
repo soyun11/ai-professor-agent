@@ -8,6 +8,7 @@ from sqlalchemy import UniqueConstraint
 
 
 class Lecture(SQLModel, table=True):
+    """강의 테이블"""
     id: Optional[int] = Field(default=None, primary_key=True)
     title: str
     description: str = ""
@@ -15,6 +16,7 @@ class Lecture(SQLModel, table=True):
 
 
 class Asset(SQLModel, table=True):
+    """파일 정보 테이블"""
     id: Optional[int] = Field(default=None, primary_key=True)
     lecture_id: int = Field(index=True)
 
