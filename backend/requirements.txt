@@ -10,3 +10,8 @@ pdf2image
 pytesseract
 Pillow
 faster-whisper
+python-dotenv       # .env 파일 읽기 (필수!)
+PyPDF2             # PDF 읽기 (필수!)
+aiofiles           # 비동기 파일 처리
+requests           # HTTP 요청
+httpx              # 비동기 HTTP 클라이언트

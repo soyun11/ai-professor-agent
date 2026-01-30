@@ -27,6 +27,7 @@ from fastapi import Body
 
 # 외부 라이브러리 임포트(OCR, AI, 데이터 처리)
 import os, json # 환경변수, JSON 파싱
+from dotenv import load_dotenv 
 from typing import Set, List, Dict, Any, Optional # 타입 힌팅
 import numpy as np # 수치 연산 (임베딩 벡터 계산)
 from openai import OpenAI # OpneAI API 클라이언트
@@ -56,6 +57,7 @@ from typing import List, Dict
 # GPU 서버에서 Qwen-VL OCR 수행
 from .ocr_runner import ocr_pdf_with_gpu
 
+load_dotenv()
 # FastAPI 애플리케이션 인스턴스 생성
 app = FastAPI(title="AI Agent for Professors - MVP Backend")
 
@@ -639,106 +641,6 @@ def _norm_text(s: str) -> str:
     s = re.sub(r"[^0-9a-z가-힣 ]+", "", s)
     return s
 
-# =============================================================================
-# [수정됨] OCR: PDF -> GPU 서버로 전송 -> pages.json 저장
-# =============================================================================
-
-# ========== 설정 ==========
-# GPU_OCR_SERVER = "http://localhost:8003"  # GPU 서버 주소 (필요시 수정)
-
-
-# # ========== OCR 함수 (Qwen-VL) ==========
-# async def ocr_pdf_with_qwen(pdf_path: str) -> List[Dict]:
-#     """
-#     GPU 서버의 Qwen-VL을 사용해 PDF OCR 수행
-#     """
-#     async with httpx.AsyncClient(timeout=600.0) as client:  # 타임아웃 늘림
-#         with open(pdf_path, "rb") as f:
-#             files = {"file": (os.path.basename(pdf_path), f, "application/pdf")}
-            
-#             response = await client.post(
-#                 f"{GPU_OCR_SERVER}/ocr/pdf",
-#                 files=files,
-#                 data={"dpi": 200, "max_tokens": 2048}
-#             )
-        
-#         if response.status_code != 200:
-#             raise Exception(f"OCR 서버 오류: {response.text}")
-        
-#         result = response.json()
-#         return result["pages"]
-
-
-# # ========== OCR 엔드포인트 ==========
-# @app.post("/lectures/{lecture_id}/ocr_pdf")
-# async def ocr_pdf(lecture_id: int, session: Session = Depends(get_session)):
-#     """PDF OCR 수행 (Qwen-VL 사용)"""
-    
-#     # Asset에서 PDF 경로 가져오기
-#     asset = session.exec(select(Asset).where(Asset.lecture_id == lecture_id)).first()
-#     if not asset or not asset.pdf_path:
-#         raise HTTPException(status_code=404, detail="PDF가 업로드되지 않았습니다.")
-    
-#     # PDF 절대 경로
-#     pdf_abs = (Path(BASE_DIR) / asset.pdf_path).resolve()
-#     if not pdf_abs.exists():
-#         raise HTTPException(status_code=404, detail=f"PDF 파일을 찾을 수 없습니다: {asset.pdf_path}")
-    
-#     try:
-#         # GPU 서버에 OCR 요청
-#         pages_result = await ocr_pdf_with_qwen(str(pdf_abs))
-        
-#         # 결과를 pages.json 형태로 변환
-#         pages_info = []
-#         for page in pages_result:
-#             pages_info.append({
-#                 "page": page["page"],
-#                 "text": page["text"],
-#             })
-        
-#         # pages.json 파일로 저장
-#         out_dir = _lecture_data_dir(lecture_id)
-#         pages_obj = {
-#             "lecture_id": lecture_id,
-#             "num_pages": len(pages_info),
-#             "pages": pages_info,
-#         }
-#         _save_json(out_dir / "pages.json", pages_obj)
-        
-#         return {
-#             "status": "success",
-#             "lecture_id": lecture_id,
-#             "total_pages": len(pages_info),
-#             "pages": pages_info,
-#         }
-    
-#     except httpx.ConnectError:
-#         raise HTTPException(
-#             status_code=503, 
-#             detail="GPU OCR 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인하세요."
-#         )
-#     except httpx.ReadTimeout:
-#         raise HTTPException(
-#             status_code=504,
-#             detail="OCR 처리 시간이 초과되었습니다. 페이지 수가 많으면 시간이 더 걸릴 수 있습니다."
-#         )
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-# def ocr_pdf_with_qwen_sync(pdf_path: str) -> List[Dict]:
-#     """동기 버전 OCR 함수"""
-#     with open(pdf_path, "rb") as f:
-#         files = {"file": (os.path.basename(pdf_path), f, "application/pdf")}
-#         response = requests.post(
-#             f"{GPU_OCR_SERVER}/ocr/pdf",
-#             files=files,
-#             data={"dpi": 200, "max_tokens": 2048},
-#             timeout=600
-#         )
-    
-#     if response.status_code != 200:
-#         raise Exception(f"OCR 서버 오류: {response.text}")
-    
-#     return response.json()["pages"]
 """
 main.py OCR 부분 수정
 
@@ -749,7 +651,12 @@ main.py OCR 부분 수정
 # ========== 엔드포인트 수정 (async → sync) ==========
 @app.post("/lectures/{lecture_id}/ocr_pdf")
 def ocr_pdf(lecture_id: int, session: Session = Depends(get_session)):
-    """PDF OCR 수행 (Qwen-VL, SSH 호출)"""
+    """PDF OCR 수행 (Qwen-VL, SSH 호출)
+    
+    1. PDF 파일이 업로드되었는지 확인하고 절대 경로 검증
+    2. GPU 서버에 SSH로 OCR 작업 요청
+    3. OCR 결과를 pages.json으로 저장 및 반환
+    """
     
     # Asset에서 PDF 경로 가져오기
     asset = session.exec(select(Asset).where(Asset.lecture_id == lecture_id)).first()
@@ -795,6 +702,13 @@ def ocr_pdf(lecture_id: int, session: Session = Depends(get_session)):
 
 @app.post("/lectures/{lecture_id}/rag_index")
 def rag_index(lecture_id: int, session: Session = Depends(get_session)):
+    """RAG 검색용 임베딩 인덱스 생성 
+    
+    1. pages.json에서 OCR 추출 텍스트 로드
+    2. 텍스트를 청크 단위로 분할하여 검색 가능한 단위로 준비
+    3. 각 청크를 임베딩(벡터)으로 변환 (GPU 서버 활용)
+    4. 임베딩 벡터와 메타데이터를 index.json으로 저장 (검색 시 사용)
+    """
     out_dir = _lecture_data_dir(lecture_id)
     pages_json_path = out_dir / "pages.json"
     if not pages_json_path.exists():
@@ -826,7 +740,7 @@ def rag_index(lecture_id: int, session: Session = Depends(get_session)):
     
     index_obj = {
         "lecture_id": lecture_id,
-        "embedding_model": "text-embedding-3-small",
+        "embedding_model": "text-embedding-3-small",# OCR로 추출된 텍스트를 벡터로 변환하는 작업
         "items": [{**records[i], "embedding": vectors[i]} for i in range(len(records))],
     }
 
@@ -846,6 +760,15 @@ def rag_ask(
     question: str = Body(..., embed=True),
     topK: int = Body(5, embed=True),
 ):
+    """
+    RAG 기반 강의자료 Q&A
+    
+    1. index.json에서 임베딩된 청크 데이터 로드
+    2. 사용자 질문을 임베딩으로 변환
+    3. 코사인 유사도로 질문과 유사한 상위 k개 청크 검색
+    4. 검색된 청크를 컨텍스트로 구성하여 LLM에 전달
+    5. LLM이 컨텍스트 기반으로 답변 생성 및 인용 정보 반환
+    """
     out_dir = _lecture_data_dir(lecture_id)
     index_json_path = out_dir / "index.json"
     if not index_json_path.exists():
@@ -1051,17 +974,47 @@ from PyPDF2 import PdfReader
 
 @app.get("/lectures/{lecture_id}/pdf_info")
 def get_pdf_info(lecture_id: int, session: Session = Depends(get_session)):
+    """
+    PDF 파일 정보 조회
+    
+    1. 데이터베이스에서 해당 강의의 PDF 경로 조회
+    2. PDF 파일의 존재 여부 검증
+    3. PyPDF2로 PDF를 열어 총 페이지 수 계산
+    4. 페이지 수와 경로 정보 반환
+
+    Args:
+        lecture_id (int): 조회할 강의의 고유 ID
+        session (Session, optional): 데이터베이스 세션(의존성 주입). Defaults to Depends(get_session).
+
+    Raises:
+        HTTPException: 404 - 해당 강의의 PDF가 업로드되지 않았을 경우
+        HTTPException: 404 - PDF 파일이 서버에 존재하지 않을 경우
+        HTTPException: 500 - PDF 파일을 읽는 중 오류 발생
+
+    Returns:
+        dict:{
+            "lecture_id": int, # 강의 ID
+            "num_pages": int, # PDF 총 페이지 수
+            "pdf_path": str # 상대 경로
+        }
+    """
+    
+    # Asset 테이블에서 lecture_id와 일치하는 레코드 조회
     asset = session.exec(select(Asset).where(Asset.lecture_id == lecture_id)).first()
     if not asset or not asset.pdf_path:
         raise HTTPException(status_code=404, detail="PDF not uploaded")
 
+    # 상대 경로를 절대 경로로 변환
     pdf_abs = (Path(BASE_DIR) / asset.pdf_path).resolve()
     if not pdf_abs.exists():
         raise HTTPException(status_code=404, detail=f"PDF file not found: {asset.pdf_path}")
 
     try:
+        # 바이너리 모드로 PDF 파일 열기
         with open(pdf_abs, "rb") as f:
+            # PyPDF2 객체로 PDF 파싱
             reader = PdfReader(f)
+            # 페이지 객체 리스트의 길이로 총 페이지 수 계산
             num_pages = len(reader.pages)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read PDF: {e}")
@@ -1074,12 +1027,21 @@ def get_pdf_info(lecture_id: int, session: Session = Depends(get_session)):
 # =============================================================================
 
 def _lecture_upload_dir(lecture_id: int) -> Path:
+    """
+    강의 업로드 파일 저장 디렉토리 경로 반환
+    base_dir/data/lectures/{lecture_id} 형태의 절대 경로 생성 """
     return (Path(BASE_DIR) / "data" / "lectures" / str(lecture_id)).resolve()
 
 def _lecture_artifacts_dir(lecture_id: int) -> Path:
+    """
+    강의 처리 결과물 저장 디렉토리 경로 반환
+    base_dir/letures/{lecture_id} 형태의 절대 경로 생성"""
     return (Path(BASE_DIR) / "lectures" / str(lecture_id)).resolve()
 
 def _safe_rmtree(p: Path) -> None:
+    """디렉토리를 안전하게 삭제
+    경로가 존재하지 않거나 삭제 중 오류 발생해도 무시하고 진행
+    """
     try:
         if p.exists():
             shutil.rmtree(p, ignore_errors=True)
@@ -1089,6 +1051,29 @@ def _safe_rmtree(p: Path) -> None:
 
 @app.delete("/lectures/{lecture_id}", status_code=status.HTTP_200_OK)
 def delete_lecture(lecture_id: int, session: Session = Depends(get_session)):
+    """
+    특정 강의 및 관련 데이터 완전 삭제
+    
+    1. 데이터베이스에서 해당 강의 조회
+    2. 강의와 연관된 모든 레코드 삭제 (TranscriptSegment, PageAnchor, Assset, Lecture)
+    3. 변경사항 커밋
+    4. 강의 업로드 파일 디렉토리 삭제
+    5. 강의 처리 결과물 디렉토리 삭제
+
+    Args:
+        lecture_id (int): 삭제할 강의의 고유 ID
+        session (Session, optional): 데이터베이스 세션
+
+    Raises:
+        HTTPException: 404 - 해당 강의가 존재하지 않을 경우
+
+    Returns:
+        dict: {
+            "ok": bool, # 삭제 성공 여부
+            "deleted_lecture_id":int, # 삭제된 강의 ID
+            "deleted_dirs: list # 삭제된 디렉토리 경로 목록"
+        }
+    """
     lec = session.get(Lecture, lecture_id)
     if not lec:
         raise HTTPException(status_code=404, detail="Lecture not found")
@@ -1123,6 +1108,26 @@ def delete_lecture(lecture_id: int, session: Session = Depends(get_session)):
 
 @app.delete("/lectures", status_code=status.HTTP_200_OK)
 def delete_all_lectures(session: Session = Depends(get_session)):
+    """
+    모든 강의 및 관련 데이터 완전 삭제
+
+    1. 데이터베이스의 모든 강의 ID 조회
+    2. 모든 관련 레코드 일괄 삭제 (TranscriptSegment, PageAnchor, Asset, Lecture)
+    3. 변경사항 커밋
+    4. 모든 강의 업로드 파일 디렉토리 삭제
+    5. 모든 강의 처리 결과물 디렉토리 삭제
+
+    Args:
+        session (Session, optional): 데이터베이스 세션
+
+    Returns:
+        dict: {
+            "ok": bool,           # 삭제 성공 여부
+            "deleted_count": int, # 삭제된 강의 개수
+            "deleted_ids": list,  # 삭제된 강의 ID 목록
+            "deleted_dirs": list  # 삭제된 디렉토리 경로 목록
+        }
+    """
     ids = session.exec(select(Lecture.id)).all()
     ids = [int(x) for x in ids]
 
@@ -1158,8 +1163,26 @@ def delete_all_lectures(session: Session = Depends(get_session)):
 @app.get("/lectures/{lecture_id}/pages_info")
 def get_pages_info(lecture_id: int):
     """
-    OCR 결과에서 페이지 수와 기본 정보를 반환합니다.
-    pages.json이 없으면 빈 응답 반환 (에러 대신)
+    OCR 결과 페이지 정보 조회 및 요약
+
+    1. pages.json 파일 존재 여부 확인 (없으면 빈 응답 반환)
+    2. 각 페이지의 OCR 텍스트에서 주요 키워드 추출
+    3. 각 페이지의 첫 문장을 제목으로 생성
+    4. 페이지별 요약 정보 (제목, 키워드, 텍스트 길이) 반환
+
+    Args:
+        lecture_id (int): 조회할 강의의 고유 ID
+
+    Returns:
+        dict: {
+            "lecture_id": int,     # 강의 ID
+            "num_pages": int,      # 총 페이지 수
+            "pages": list[dict]    # 페이지별 요약 정보
+                - page: int        # 페이지 번호
+                - title: str       # 첫 문장 또는 자동 생성 제목
+                - keywords: list   # 빈도 상위 5개 키워드
+                - text_length: int # 텍스트 길이
+        }
     """
     out_dir = _lecture_data_dir(lecture_id)
     pages_json_path = out_dir / "pages.json"
@@ -1173,17 +1196,19 @@ def get_pages_info(lecture_id: int):
     pages_summary = []
     for p in pages:
         text = (p.get("text") or "").strip()
-        text = (p.get("text") or "").strip().lower()
-        tokens = re.findall(r"[0-9a-z가-힣]{3,}", text)
-        word_freq = {}
+        text = (p.get("text") or "").strip().lower() # 텍스트 소문자 변환 및 공백 제거
+        tokens = re.findall(r"[0-9a-z가-힣]{3,}", text) # 3글자 이상의 단어/숫자 추출(영문, 한글 모두 포함)
+        word_freq = {} # 각 단어의 출현 빈도 계산
         for t in tokens:
             word_freq[t] = word_freq.get(t, 0) + 1
 
-        
+        # 빈도 기준 상위 5개 선택
         keywords = sorted(word_freq.items(), key=lambda x: x[1], reverse=True)[:5]
         keywords = [k[0] for k in keywords]
         
+        # 첫 문장 추출(마침표 기준)
         first_sentence = text.split(".")[0].strip() if text else ""
+        # 제목 설정(길이 5글자 이상이면 사용,
         title = first_sentence[:50] if len(first_sentence) > 5 else f"페이지 {p.get('page', 0)}"
         
         pages_summary.append({
@@ -1202,14 +1227,89 @@ def get_pages_info(lecture_id: int):
 
 # =============================================================================
 # Auto Sync (임베딩 기반 페이지-오디오 매칭)
+# Auto_Sync 알고리즘의 목표
+# 문제: 강의 PDF 페이지와 음성 자막이 어느 시점에 일치하는지 알고 싶다.
+
+# 예: "페이지 5는 음성에서 2분 30초일 때 나타난다"는 정보를 찾는 것
+
+# 입력(Input):
+
+# PDF에서 추출한 각 페이지의 텍스트 (pages.json)
+# 음성을 텍스트로 변환한 자막 (TranscriptSegment) - 시작시간, 끝시간, 텍스트 포함
+
+# 출력(Output):
+
+# 각 페이지가 음성에서 어느 시간에 나타나는지 (PageAnchor) - 페이지 번호, 시간
 # =============================================================================
 @app.post("/lectures/{lecture_id}/auto_sync")
 def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
     """
-    [최종] 임베딩(Embedding) + 키워드 스포팅(Keyword Spotting) + 신뢰도 기반 보간법(DWT) 적용
-    """
+    임베딩 + 키워드 스포팅 + 신뢰도 기반 보간법을 활용한 PDF 페이지-음성 자막 자동 동기화
+
+    **알고리즘 개요:**
+    1. PDF 각 페이지의 텍스트와 음성 자막을 텍스트-임베딩-3-small 모델로 숫자(벡터)로 변환
+    2. 각 페이지와 자막 그룹 간의 의미적 유사도를 코사인 유사도로 계산
+    3. 공통 키워드가 있으면 추가 점수 부여 (키워드 스포팅)
+    4. 동적 프로그래밍으로 페이지 순서를 지키면서 최고 점수의 매칭 경로 탐색
+    5. 점수 임계값(1.3) 이상의 신뢰도 높은 앵커만 선택
+    6. 신뢰도 낮은 구간은 선형 보간으로 채우기
+    7. 원본 자막(3~5초 단위)으로 최종 미세 조정 (Sliding Window)
+    8. 결과를 PageAnchor 테이블에 저장
+
+    **입력 데이터:**
+    - pages.json: OCR로 추출한 PDF 각 페이지의 텍스트
+    - TranscriptSegment: 음성을 텍스트로 변환한 자막 (시작시간, 끝시간, 텍스트)
+
+    **출력 데이터:**
+    - PageAnchor: 각 PDF 페이지가 음성에서 나타나는 시간
+    - sync_debug.json: 매칭 경로와 유사도 점수 (디버깅용)
+    - similarity_matrix.json: 전체 유사도 행렬 (시각화용)
+
+    Args:
+        lecture_id (int): 동기화할 강의의 고유 ID
+        session (Session, optional): 데이터베이스 세션. Defaults to Depends(get_session).
+
+    Raises:
+        HTTPException: 404 - pages.json 파일이 없을 경우 (먼저 /ocr_pdf 실행 필요)
+        HTTPException: 400 - OCR 페이지가 비어 있을 경우
+        HTTPException: 400 - Transcript 자막이 없을 경우 (먼저 /transcribe 실행 필요)
+        HTTPException: 400 - 자막 그룹 생성 실패할 경우
+        HTTPException: 500 - 임베딩 생성 중 오류 발생 시
+
+    Returns:
+        dict: {
+            "ok": bool,                      # 동기화 성공 여부
+            "lecture_id": int,               # 강의 ID
+            "anchors_count": int,            # 생성된 앵커 개수
+            "anchors": list[dict],           # 페이지별 앵커 정보
+                - "page": int                # 페이지 번호
+                - "time": float              # 음성에서의 시간(초)
+            "debug": {
+                "num_pages": int,            # 총 페이지 수
+                "num_segment_groups": int,   # 10초 단위로 묶은 자막 그룹 개수
+                "matched_pairs_count": int   # DP로 찾은 매칭 쌍의 개수
+            }
+        }"""
+    
     # 1. 내부 유틸 함수 정의
     def clean_text_local(s:str) -> str:
+        """
+        텍스트를 정규화(normalize)하여 불필요한 문자를 제거하고 표준화하는 함수
+        
+        Args:
+            s (str): 정규화할 텍스트
+                    예: "안녕하세요!!! 저는 A학생입니다..."
+        
+        Returns:
+            str: 정규화된 텍스트
+                예: "안녕하세요 저는 a학생입니다"
+        
+        처리 단계:
+        1. None/빈 문자열 처리
+        2. 대문자를 소문자로 변환
+        3. 연속된 공백을 단일 공백으로 정리
+        4. 숫자/한글/영문/공백 외의 모든 특수문자 제거
+        """
         import re
         s = (s or "").strip().lower()
         s = re.sub(r"\s+", " ", s)
@@ -1217,65 +1317,96 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
         return s
     
     def get_keywords_local(text: str) -> set:
+        """
+        텍스트에서 의미 있는 키워드(단어)를 추출하는 함수
+        
+        Args:
+            text (str): 키워드를 추출할 텍스트
+                    예: "안녕하세요 저는 1 1 2 입니다"
+        
+        Returns:
+            set: 2글자 이상의 단어들의 집합 (순서 없음, 중복 없음)
+                예: {"안녕", "하세요", "입니다"}
+        
+        처리 단계:
+        1. 텍스트를 clean_text_local()로 정규화
+        2. 정규화된 텍스트를 공백으로 분할하여 단어 리스트 만들기
+        3. 2글자 이상의 단어만 필터링
+        4. set(집합)으로 변환하여 중복 제거
+        """
         normalized = clean_text_local(text)
         return set([w for w in normalized.split() if len(w) >= 2])
     
     # 2. 데이터 로드 및 전처리
-    out_dir = _lecture_data_dir(lecture_id)
-    pages_json_path = out_dir / "pages.json"
-    if not pages_json_path.exists():
-        raise HTTPException(status_code=404, detail="pages.json이 없습니다. 먼저 /ocr_pdf를 실행하세요.")
+    out_dir = _lecture_data_dir(lecture_id) # 강의 데이터가 저장된 디렉토리 경로 반환
+    pages_json_path = out_dir / "pages.json" # 그 디렉토리 안의 pages.json 파일 경로(나중에 저장한 OCR결과를 찾기 위해)
+    if not pages_json_path.exists(): 
+        raise HTTPException(status_code=404, detail="pages.json이 없습니다. 먼저 /ocr_pdf를 실행하세요.") # 경로의 파일이 실제로 존재하지 않으면 에러
     
-    pages_obj = _load_json(pages_json_path)
-    pages = pages_obj.get("pages", [])
-    if not pages:
+    pages_obj = _load_json(pages_json_path) # JSON 파일 전체를 파이썬 딕셔너리로 변환, pages_obj는 이 전체 딕셔너리.
+    pages = pages_obj.get("pages", []) # pages_obj 딕셔너리에서 pages 배열만 추출
+    if not pages: # pages 리스트가 비어있으면 HTTP 400 에러 반환
         raise HTTPException(status_code=400, detail="OCR 페이지가 비어 있습니다.")
     
-    transcript_rows = session.exec(
-        select(TranscriptSegment)
-        .where(TranscriptSegment.lecture_id == lecture_id)
-        .order_by(TranscriptSegment.start)
-    ).all()
+    transcript_rows = session.exec( # 데이터베이스 쿼리 실행해서 음성 자막 데이터 조회
+        select(TranscriptSegment) # TranscriptSegment 테이블에서 조회
+        .where(TranscriptSegment.lecture_id == lecture_id) # 해당 강의의 레코드만
+        .order_by(TranscriptSegment.start) # 시작 시간 순서대로 정렬
+    ).all() # 모든 결과를 리스트로 반환
     
-    if not transcript_rows:
+    if not transcript_rows: # 자막이 없으면 HTTP 400에러
         raise HTTPException(status_code=400, detail="Transcript가 없습니다. 먼저 /transcribe를 실행하세요.")
     
-    # 페이지 텍스트 준비
-    page_texts = []
-    for p in pages:
-        text = (p.get("text") or "").strip()
-        if len(text) < 50 and p.get("words"):
-            text = " ".join([w.get("t", "") for w in p.get("words", [])])
-        text = text.strip()
-        if not text or len(text) < 5:
-            text = f"페이지 {p.get('page', 0)} 내용"
-        page_texts.append(text[:2000])
-    
-    # 자막 그룹화 (10초 단위)
-    segment_groups = []
-    current_group = {"start": 0, "end": 0, "texts": []}
-    group_duration = 10 
-    
-    for seg in transcript_rows:
-        seg_text = (seg.text or "").strip()
-        if not seg_text: continue
-            
-        if not current_group["texts"]:
-            current_group["start"] = seg.start
+    # ===== [STEP 2] 페이지 텍스트 준비 =====
+    page_texts = [] # 각 페이지의 텍스트를 저장할 빈 리스트 생성
+    for p in pages: # 각 페이지를 순회
         
+        # ===== 상황별 처리: 1단계 - 기본 텍스트 추출 =====
+        text = (p.get("text") or "").strip() # pages 딕셔너리에서 text 키의 값을 추출해서 없으면 빈 문자열 사용하고 앞뒤 공백 제거
+        
+        # ===== 상황별 처리: 2단계 - OCR 실패 대비 (words로 복구) =====
+        if len(text) < 50 and p.get("words"): # 텍스트가 50자 미만이면, 페이지의 "words"필드가 있으면,
+            text = " ".join([w.get("t", "") for w in p.get("words", [])]) # 각 단어를 합쳐서 텍스트 복구
+        text = text.strip() # 다시 공백 제거
+        
+        # ===== 상황별 처리: 3단계 - 완전히 빈 페이지 또는 너무 짧은 페이지 =====
+        if not text or len(text) < 5:# 텍스트가 빈 문자열이거나 5글자 미만이면
+            text = f"페이지 {p.get('page', 0)} 내용" # 플레이스홀더 텍스트 생성
+        
+        # ===== 상황별 처리: 4단계 - 최종 저장 (길이 제한 적용) =====
+        page_texts.append(text[:2000]) # 텍스트의 처음 2000글자만 선택, pages_texts 리스트에 추가
+    
+    # ===== [STEP3] 자막 그룹화 (10초 단위) =====
+    segment_groups = [] # 완성될 그룹들을 저장할 리스트
+    current_group = {"start": 0, "end": 0, "texts": []} # 현재 만들고 있는 그룹(딕셔너리)
+    group_duration = 10 # 한 그룹의 목표 길이(10초)
+    
+    # 각 자막 세그먼트를 순회
+    for seg in transcript_rows:
+        seg_text = (seg.text or "").strip() # 자막 텍스트 추출, None이면 "", 공백 제거
+        if not seg_text: continue # 텍스트가 비어있으면 스킵
+        
+        # 새 그룹 시작    
+        if not current_group["texts"]: # 현재 그룹이 비어있으면(처음 시작 또는 방금 그룹 완성)
+            current_group["start"] = seg.start # 이 자막의 시작시간을 그룹의 시작시간으로 설정
+        
+        # 현재 자막 텍스트를 그룹에 추가
         current_group["texts"].append(seg_text)
+        # 끝시간을 현재 자막의 끝시간으로 업데이트
         current_group["end"] = seg.end
         
-        if seg.end - current_group["start"] >= group_duration:
-            group_text = " ".join(current_group["texts"]).strip()
+        # 그룹이 10초 이상이면 저장
+        if seg.end - current_group["start"] >= group_duration: # 현재 그룹의 길이(초)가 10초 이상이면
+            group_text = " ".join(current_group["texts"]).strip()# 텍스트들을 공백으로 합치기
             if group_text:
-                segment_groups.append({
+                segment_groups.append({# 완성된 그룹을 리스트에 추가
                     "start": current_group["start"],
                     "end": current_group["end"],
                     "text": group_text
                 })
-            current_group = {"start": 0, "end": 0, "texts": []}
+            current_group = {"start": 0, "end": 0, "texts": []} # 새로운 그룹 시작을 위해 초기화
     
+    # 마지막 그룹 처리(루프가 끝난 후 남은 자막이 있을 수 있음. 그것들도 하나의 그룹으로 저장함. 10초 미만이어도.)
     if current_group["texts"]:
         group_text = " ".join(current_group["texts"]).strip()
         if group_text:
@@ -1285,67 +1416,148 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
                 "text": group_text
             })
     
+    # 그룹이 생성되었는지 확인
     if not segment_groups:
         raise HTTPException(status_code=400, detail="자막 그룹을 생성할 수 없습니다.")
     
-    # 3. 임베딩 생성
-    all_texts = []
-    for t in page_texts:
+    # ===== [STEP 4] 임베딩 생성 =====
+    all_texts = [] # 모든 텍스트를 저장할 리스트 생성
+    for t in page_texts: # 페이지 텍스트 추가(공백 정리 및 플레이스홀더)=> 빈 텍스트를 임베딩 모델에 주면 의미 있는 벡터가 생성되지 않음. 플레이스홀더를 주면 최소한의 의미 있는 벡터 생성됨.
         clean_t = t.strip()
         all_texts.append(clean_t if clean_t else "빈 페이지")
     
-    for g in segment_groups:
-        clean_t = g["text"][:2000].strip()
-        all_texts.append(clean_t if clean_t else "빈 구간")
+    # 자막 그룹 텍스트 추가
+    for g in segment_groups: # 각 자막 그룹을 순회
+        clean_t = g["text"][:2000].strip() # 최대 2000자만(너무 길면 잘라내기), 공백 제거
+        all_texts.append(clean_t if clean_t else "빈 구간") # 빈 텍스트면 플레이스홀더 사용
     
+    # 최종 점검: 혹시 모를 빈 텍스트가 남아있으면 placeholder로 교체
     all_texts = [t if t.strip() else "placeholder" for t in all_texts]
     
+    # GPU에서 임베딩 생성
     try:
+        # text-embedding-3-small 모델을 사용해 각 텍스트를 벡터로 변환
+        # 각 텍스트는 300차원의 벡터가 됨.
         all_embeddings = get_embeddings_from_gpu(all_texts) # 페이지 글이랑 자막 글을 숫자로 바꾼다.
-    except Exception as e:
+    except Exception as e: # GPU 서버 연결 실패, 모델 로깅 실패 등이 발생할 수 있음. 
         raise HTTPException(status_code=500, detail=f"Embedding 생성 실패: {e}")
 
-    num_pages = len(page_texts)
-    page_embeddings = all_embeddings[:num_pages]
-    segment_embeddings = all_embeddings[num_pages:]
+    # 페이지와 자막 임베딩 분리
+    num_pages = len(page_texts) # 페이지 개수(예를 들어 3개라고 하면)
+    page_embeddings = all_embeddings[:num_pages] # 처음 페이지 3개의 벡터(페이지용)
+    segment_embeddings = all_embeddings[num_pages:]# 나머지 자막 그룹의 벡터들(자막용)
     
-    # 4. 유사도 매트릭스 계산
+    # ===== [STEP 5] 유사도 매트릭스 계산 =====
+    # NumPy 배열로 변환(행렬 연산이 가능하도록)
+    # page_embeddings = [
+    #     [0.1, 0.5, 0.3],
+    #     [0.2, 0.3, 0.1],
+    #     [0.15, 0.45, 0.25]
+    # ]
+
+    # page_vecs = np.array(page_embeddings, dtype=np.float32)
+    # 결과: 3x3 행렬 (실제로는 300x300)
+    # [
+    #   [0.1,  0.5,  0.3],
+    #   [0.2,  0.3,  0.1],
+    #   [0.15, 0.45, 0.25]
+    # ]
     page_vecs = np.array(page_embeddings, dtype=np.float32)
     seg_vecs = np.array(segment_embeddings, dtype=np.float32)
     
+    # 벡터의 Norm(원점에서 해당 벡터의 끝점까지의 거리) 계산. 벡터 [a, b, c]의 노름 = √(a² + b² + c²)
+    # axis = 1의 의미: 행별 계산
+    # keepdims=True의 의미: 차원(형태) 유지(벡터 정규화를 위해)
     page_norms = np.linalg.norm(page_vecs, axis=1, keepdims=True)
     seg_norms = np.linalg.norm(seg_vecs, axis=1, keepdims=True)
     
+    # 벡터 정규화(코사인 유사도 계산을 위해)
     page_vecs_norm = page_vecs / np.where(page_norms > 0, page_norms, 1)
     seg_vecs_norm = seg_vecs / np.where(seg_norms > 0, seg_norms, 1)
     
+    # 정규화된 벡터 = 원래 벡터 / ||벡터||
+
+    # 벡터 v = [0.1, 0.5, 0.3], ||v|| ≈ 0.592
+    # 정규화 v = [0.1/0.592, 0.5/0.592, 0.3/0.592]
+    #        = [0.169, 0.844, 0.507]
+    
+    # 왜 정규화? 코사인 유사도를 계산하기 위해. 정규화 후 두 벡터의 내적 = 코사인 유사도.
+    # page_vecs = [
+    #     [0.1, 0.5, 0.3],
+    #     [0.2, 0.3, 0.1]
+    # ]
+    # page_norms = [[0.592], [0.374]]
+
+    # page_vecs_norm = [
+    #     [0.1/0.592, 0.5/0.592, 0.3/0.592],    # [0.169, 0.844, 0.507]
+    #     [0.2/0.374, 0.3/0.374, 0.1/0.374]     # [0.535, 0.802, 0.267]
+    # ]
+    
+    # 코사인 유사도 계산(행렬 곱)
+    # 결과: (페이지 수) x (자막 그룹 수) 크기의 행렬
     similarity_matrix = np.dot(page_vecs_norm, seg_vecs_norm.T) # 유사도 행렬 만드는 코드: 페이지랑 자막이 얼마나 비슷한지 점수표를 만든다.
     
-    # 5. Keyword Spotting (키워드 가산점)
+    # similarity_matrix = [
+    #     [0.95, 0.20],    # 페이지1: 자막1과 0.95 유사, 자막2와 0.20 유사
+    #     [0.30, 0.92],    # 페이지2: 자막1과 0.30 유사, 자막2와 0.92 유사
+    #     [0.10, 0.88]     # 페이지3: 자막1과 0.10 유사, 자막2와 0.88 유사
+    # ]
+
+    # 해석:
+    # 페이지1은 자막1과 가장 비슷 (0.95)
+    # 페이지2는 자막2와 가장 비슷 (0.92)
+    # 페이지3은 자막2와 가장 비슷 (0.88)
+    
+    # ===== [STEP 6] Keyword Spotting (키워드 가산점) =====
+    # 각 페이지의 키워드 추출
     page_keywords = [get_keywords_local(t) for t in page_texts]
+    # 각 자막 그룹의 키워드 추출
     segment_keywords = [get_keywords_local(g["text"]) for g in segment_groups]
     
-    num_segments = len(segment_groups)
-    keyword_matrix = np.zeros((num_pages, num_segments))
+    # 키워드 점수 행렬 생성
+    num_segments = len(segment_groups) # 자막 그룹 개수
+    keyword_matrix = np.zeros((num_pages, num_segments)) # 모두 0으로 채운 행렬 생성
+    # 각 칸은 "이 페이지와 이 자막이 공통 키워드로 인한 추가 점수"
     
-    for i in range(num_pages):
-        p_set = page_keywords[i]
-        if not p_set: continue
-        for j in range(num_segments):
-            s_set = segment_keywords[j]
-            if not s_set: continue
-            common_words = p_set & s_set
-            if common_words:
-                score_boost = len(common_words) * 0.5
-                keyword_matrix[i][j] = score_boost
-                
+    # 이중 루프 시작(모든 페이지-자막 쌍 확인)
+    for i in range(num_pages): # i는 페이지 인덱스(0부터 num_pages-1까지)
+        p_set = page_keywords[i] # p_set = i번 페이지의 키워드 집합
+        if not p_set: continue # 키워드가 없으면 다음 페이지로 넘어감
+        
+        # 각 자막 그룹과 비교
+        for j in range(num_segments):  # j는 자막 그룹 인덱스(0부터 num_segments-1까지)
+            s_set = segment_keywords[j] # s_set = j번 자막의 키워드 집합
+            if not s_set: continue # 키워드가 없으면 다음 자막으로 넘어감
+            
+            # 공통 키워드 찾기 및 점수 계산
+            common_words = p_set & s_set # 두 집합의 교집합인 공통 키워드
+            if common_words: # 공통 키워드가 있으면
+                score_boost = len(common_words) * 0.5 # 공통 키워드 개수 x 0.5
+                keyword_matrix[i][j] = score_boost # 그 점수를 행렬에 저장
+    
+    # 유사도 행렬에 키워드 점수 추가            
     similarity_matrix += keyword_matrix
     
-    # 6. DP 알고리즘 (최적 경로 탐색)
-    dp = np.full((num_pages + 1, num_segments + 1), -np.inf)
-    dp[0][0] = 0
+    # ===== [STEP 7]: DP 알고리즘(최적 경로 탐색)
+    # DP 테이블 초기화
+    # 크기: (페이지 수 + 1) x (자막 그룹 수 + 1)
+    dp = np.full((num_pages + 1, num_segments + 1), -np.inf) # 모든 초기값을 마이너스 무한대로 채움.
+    dp[0][0] = 0 # 시작점만 0으로 설정
+    
+    # dp 초기 상태:
+    #     자막0  자막1  자막2
+    # 페이지0  0    -∞    -∞
+    # 페이지1  -∞   -∞    -∞
+    # 페이지2  -∞   -∞    -∞
+    # 페이지3  -∞   -∞    -∞
+
+    # 각 칸의 의미:
+    # dp[i][j] = "페이지 0~i를 자막 0~j로 매칭했을 때의 최고 점수"
+    
+    # 경로 역추적 정보 저장 딕셔너리: 나중에 최적 경로를 찾기 위해 이전 상태를 기록하는 딕셔너리
     parent = {}
     
+    # DP 계산(3중 루프)
     for i in range(1, num_pages + 1): # 페이지 순서를 지키면서 가장 자연스러운 매칭을 고른다.
         for j in range(1, num_segments + 1):
             for prev_j in range(j):
@@ -1354,8 +1566,10 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
                     dp[i][j] = score
                     parent[(i, j)] = (i-1, prev_j, j-1)
     
+    # 최고 점수 찾기: 마지막 페이지의 점수들(첫번째 제외)에서 최고 점수의 인덱스를 찾고 인덱스 조정(슬라이싱 때문에)
     best_j = np.argmax(dp[num_pages, 1:]) + 1
     
+    # 경로 역추적
     path = []
     i, j = num_pages, best_j
     while i > 0 and (i, j) in parent:
@@ -1365,35 +1579,41 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
     
     path.reverse()
     
-    # 7. [핵심] 신뢰도 기반 보간법 (Interpolation)
-    reliable_anchors = []
-    reliable_anchors.append({"page": 0, "time": 0.0}) # 시작점 고정
+    # ===== [STEP 8] [핵심] 신뢰도 기반 보간법: 신뢰할 수 있는 앵커들 사이의 빈 부분을 채우기 =====
+    # 신뢰도 높은 앵커 리스트 시작
+    reliable_anchors = [] # DP로 찾은 경로 중 신뢰도 높은 것만 저장
+    reliable_anchors.append({"page": 0, "time": 0.0}) # 시작점(페이지 0, 시간 0.0)을 반드시 포함
     
-    for page_idx, seg_idx in path:
-        score = similarity_matrix[page_idx][seg_idx]
-        THRESHOLD = 1.3 # 임계값 설정
+    # DP 결과에서 신뢰도 높은 매칭만 선택
+    for page_idx, seg_idx in path: # path의 각 (페이지, 자막) 쌍을 순회
+        score = similarity_matrix[page_idx][seg_idx] # 그 쌍의 유사도 점수
+        THRESHOLD = 1.3 # 신뢰도 임계값(이 이상만 신뢰)
         
-        if score >= THRESHOLD:
+        # 점수가 높으면 reliable_anchors에 추가
+        if score >= THRESHOLD: 
             time = segment_groups[seg_idx]["start"]
             reliable_anchors.append({"page": page_idx + 1, "time": time})
             
     # 마지막 페이지 처리
-    last_transcript_time = transcript_rows[-1].end if transcript_rows else 0
-    if reliable_anchors[-1]["page"] < num_pages:
-        reliable_anchors.append({"page": num_pages + 1, "time": last_transcript_time})
+    last_transcript_time = transcript_rows[-1].end if transcript_rows else 0 
+    if reliable_anchors[-1]["page"] < num_pages: # 아직 마지막 페이지까지 도달하지 못했다면
+        reliable_anchors.append({"page": num_pages + 1, "time": last_transcript_time}) # 마지막 페이지를 추가
 
-    # 빈 구간 채우기
+    # 빈 구간 보간
     final_anchors = []
+    
+    # 신뢰도 높은 앵커들 사이를 순회
     for k in range(len(reliable_anchors) - 1):
         curr_anchor = reliable_anchors[k]
         next_anchor = reliable_anchors[k+1]
         
+        # 앵커의 시작과 끝 추출
         start_page = int(curr_anchor["page"])
         end_page = int(next_anchor["page"])
         start_time = curr_anchor["time"]
         end_time = next_anchor["time"]
         
-        # 현재 앵커 추가
+        # 현재 앵커를 최종 결과에 추가
         if start_page > 0 and start_page <= num_pages:
              final_anchors.append({"page": start_page, "time": start_time})
         
@@ -1408,19 +1628,25 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
                 if interp_page <= num_pages:
                     final_anchors.append({"page": interp_page, "time": interp_time})
 
+    # 최종 정렬: 페이지 번호 순서대로 정렬
     final_anchors.sort(key=lambda x: x["page"])
     
-    # Sliding Window 미세 조정 (Fine-tuning)
+    # ===== [STEP 9] Sliding Window 미세 조정 (Fine-tuning) =====
     # 목표: 10초 단위로 뭉뚱그려진 시간을 원본 자막(3~5초) 단위로 정밀 보정
     
+    # 최종 앵커를 저장할 리스트: 미세 조정된 앵커들을 저장할 새로운 리스트
     refined_anchors = []
     
-    for anchor in final_anchors:
-        page_idx = anchor["page"] - 1 # 0-based index
+    # 각 앵커를 순회하고 페이지 인덱스 확인
+    for anchor in final_anchors: # final_anchors의 각 앵커를 하나씩 처리
+        page_idx = anchor["page"] - 1 # 페이지 번호를 0-based index로 변환
         if page_idx < 0 or page_idx >= len(page_texts):
-            refined_anchors.append(anchor)
-            continue
-            
+            refined_anchors.append(anchor) # 유효하지 않은 페이지면 그대로 추가하고 
+            continue # 계속
+        
+        # 보간으로 구한 대략적인 시간 저장 
+        # 목표: STEP 8 에서 보간으로 구한 시간을 미세하게 조정하는 것
+        # 이 시간이 정확한 지 확인하고 더 정확한 시간이 있으면 그걸 사용
         coarse_time = anchor["time"]
         
         # 1. 탐색 범위 설정 (현재 시간 ±15초)
@@ -1429,25 +1655,27 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
         
         # 2. 범위 내의 "원본 자막 세그먼트" 찾기
         candidates = [
-            seg for seg in transcript_rows 
-            if seg.end >= search_start and seg.start <= search_end
+            seg for seg in transcript_rows # transcript_rows는 원보 자막으로 3~5초 단위
+            if seg.end >= search_start and seg.start <= search_end # 범위 [search_start, search_end]와 겹치는 자막만 선택
         ]
         
+        # 후보가 없으면 원래 시간 사용
         if not candidates:
             refined_anchors.append(anchor)
             continue
             
         # 3. 페이지 키워드 가져오기
-        p_keywords = page_keywords[page_idx]
-        if not p_keywords:
+        p_keywords = page_keywords[page_idx] # page_keywords[page_index]는 STEP6에서 구한 페이지의 키우더드
+        if not p_keywords: # 키워드가 없으면 원래 시간 사용
             refined_anchors.append(anchor)
             continue
             
         # 4. 세그먼트별 매칭 점수 계산 (Sliding)
-        best_time = coarse_time
-        max_score = 0
-        found_better = False
+        best_time = coarse_time # 현재까지 찾은 최고의 시간(초기값: 원래 시간)
+        max_score = 0 # 현재까지의 최고 키워드 매칭 개수
+        found_better = False # 더 나은 시간을 찾았는지 여부
         
+        # 각 자막 후보를 확인하고 점수 계산
         for seg in candidates:
             # 자막 세그먼트에서 키워드 추출
             s_keywords = get_keywords_local(seg.text)
@@ -1469,33 +1697,36 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
                         best_time = seg.start
         
         # 5. 더 나은 시간이 발견되었고, 오차가 너무 크지 않다면 업데이트
-        if found_better:
+        if found_better: # 키워드 매칭으로 더 나은 시간을 찾음
             refined_anchors.append({"page": anchor["page"], "time": best_time})
         else:
             refined_anchors.append(anchor)
 
-    # 최종 결과를 refined_anchors로 교체
+    # 최종 앵커 결과를 refined_anchors로 교체: 미세 조정된 앵커들로 최종 결과 업데이트
     final_anchors = refined_anchors
     
     # 미세 조정 완료
     
-    # 8. 결과 저장
-    old_anchors = session.exec(
+    # ===== [STEP 10] 결과 저장 =====
+    old_anchors = session.exec( # 데이터베이스에서 같은 강의의 기존 PageAnchor 레코드 모두 조회
         select(PageAnchor).where(PageAnchor.lecture_id == lecture_id)
     ).all()
     for anchor in old_anchors:
-        session.delete(anchor)
-    session.commit()
+        session.delete(anchor) # 그것들을 하나씩 삭제
+    session.commit() # 변경사항 저장
     
+    # 새로 생성할 앵커를 저장할 리스트
     anchors_created = []
+    # 새로운 앵커 생성 및 추가
     for item in final_anchors:
         anchor = PageAnchor(lecture_id=lecture_id, page=item["page"], time=float(item["time"]))
         session.add(anchor)
         anchors_created.append(item)
-    
+    # 모든 변경사항 커밋
     session.commit()
     
-    # 9. 디버그 및 리턴
+    # ===== [STEP 11] 디버그 및 리턴 =====
+    # 디버그 정보 저장
     debug_info = {
         "lecture_id": lecture_id,
         "num_pages": num_pages,
@@ -1505,6 +1736,7 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
     }
     _save_json(out_dir / "sync_debug.json", debug_info)
     
+    # 유사도 행렬 저장
     similarity_data = {
         "lecture_id": lecture_id,
         "num_pages": num_pages,
@@ -1515,6 +1747,7 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
     }
     _save_json(out_dir / "similarity_matrix.json", similarity_data)
     
+    # 최종 응답 반환
     return {
         "ok": True,
         "lecture_id": lecture_id,
