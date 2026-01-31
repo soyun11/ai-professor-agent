@@ -54,6 +54,14 @@ def download_youtube_to_mp3(url: str, output_dir: Path, filename: str = None) ->
         }],
         'quiet': False,
         'no_warnings': True,
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['web', 'android'],  # 다른 클라이언트 시도
+            }
+        },
+        'http_headers': {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        },
     }
     
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:

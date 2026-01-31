@@ -1534,6 +1534,8 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
             if common_words: # 공통 키워드가 있으면
                 score_boost = len(common_words) * 0.5 # 공통 키워드 개수 x 0.5
                 keyword_matrix[i][j] = score_boost # 그 점수를 행렬에 저장
+                
+                # 오차가 큰 부분을 keyword_matrix로 출력해보기
     
     # 유사도 행렬에 키워드 점수 추가            
     similarity_matrix += keyword_matrix
