@@ -1,0 +1,519 @@
+{
+  "lecture_id": 1,
+  "algorithm": "structured_pdf",
+  "params": {
+    "grouping": "none",
+    "group_duration": 10.0,
+    "group_count": 5,
+    "confidence_threshold": 0.4
+  },
+  "anchors": [
+    {
+      "page": 1,
+      "time": 0.91,
+      "confidence": 0.5516505241394043,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 2,
+      "time": 90.78,
+      "confidence": 0.7868525385856628,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 3,
+      "time": 150.54,
+      "confidence": 0.6562405824661255,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 4,
+      "time": 184.82,
+      "confidence": 0.6369906663894653,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 5,
+      "time": 216.09666666666666,
+      "confidence": 0.3,
+      "method": "interpolation"
+    },
+    {
+      "page": 6,
+      "time": 247.3733333333333,
+      "confidence": 0.3,
+      "method": "interpolation"
+    },
+    {
+      "page": 7,
+      "time": 278.65,
+      "confidence": 0.5528935790061951,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 8,
+      "time": 333.99,
+      "confidence": 0.66194748878479,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 9,
+      "time": 460.64,
+      "confidence": 0.5467743873596191,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 10,
+      "time": 757.23,
+      "confidence": 0.543888509273529,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 11,
+      "time": 1097.78,
+      "confidence": 0.741956353187561,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 12,
+      "time": 1121.72,
+      "confidence": 0.5847292542457581,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 13,
+      "time": 1184.4,
+      "confidence": 0.5011811256408691,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 14,
+      "time": 1196.28,
+      "confidence": 0.533599853515625,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 15,
+      "time": 1216.62,
+      "confidence": 0.6005160212516785,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 16,
+      "time": 1600.28,
+      "confidence": 0.6077773571014404,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 17,
+      "time": 1748.38,
+      "confidence": 0.6795501708984375,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 18,
+      "time": 1776.31,
+      "confidence": 0.726050853729248,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 19,
+      "time": 1845.55,
+      "confidence": 0.6513909101486206,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 20,
+      "time": 1918.28,
+      "confidence": 0.773695707321167,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 21,
+      "time": 1923.26,
+      "confidence": 0.6989067792892456,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 22,
+      "time": 1981.76,
+      "confidence": 0.6820394992828369,
+      "method": "structured_pdf"
+    },
+    {
+      "page": 23,
+      "time": 2111.33,
+      "confidence": 0.6635009050369263,
+      "method": "structured_pdf"
+    }
+  ],
+  "debug_info": {
+    "algorithm": "structured_pdf",
+    "weights": {
+      "title": 0.6,
+      "content": 0.4
+    },
+    "num_pages": 23,
+    "num_segments": 406,
+    "matched_path": [
+      [
+        1,
+        0,
+        0.5516505241394043
+      ],
+      [
+        2,
+        13,
+        0.7868525385856628
+      ],
+      [
+        3,
+        25,
+        0.6562405824661255
+      ],
+      [
+        4,
+        32,
+        0.6369906663894653
+      ],
+      [
+        5,
+        45,
+        0.3761637806892395
+      ],
+      [
+        6,
+        48,
+        0.37445855140686035
+      ],
+      [
+        7,
+        49,
+        0.5528935790061951
+      ],
+      [
+        8,
+        56,
+        0.66194748878479
+      ],
+      [
+        9,
+        75,
+        0.5467743873596191
+      ],
+      [
+        10,
+        109,
+        0.543888509273529
+      ],
+      [
+        11,
+        168,
+        0.741956353187561
+      ],
+      [
+        12,
+        171,
+        0.5847292542457581
+      ],
+      [
+        13,
+        189,
+        0.5011811256408691
+      ],
+      [
+        14,
+        195,
+        0.533599853515625
+      ],
+      [
+        15,
+        198,
+        0.6005160212516785
+      ],
+      [
+        16,
+        270,
+        0.6077773571014404
+      ],
+      [
+        17,
+        291,
+        0.6795501708984375
+      ],
+      [
+        18,
+        299,
+        0.726050853729248
+      ],
+      [
+        19,
+        320,
+        0.6513909101486206
+      ],
+      [
+        20,
+        332,
+        0.773695707321167
+      ],
+      [
+        21,
+        333,
+        0.6989067792892456
+      ],
+      [
+        22,
+        340,
+        0.6820394992828369
+      ],
+      [
+        23,
+        366,
+        0.6635009050369263
+      ]
+    ],
+    "reliable_count": 21,
+    "confidence_threshold": 0.4,
+    "page_titles": [
+      "컴퓨터 네트워크",
+      "TCP개요",
+      "TCP segment structure",
+      "TCP seq. #'s and ACKs",
+      "tcp.port:=8888",
+      "```",
+      "14.651150 7168 SYN 8888",
+      "TCP Round Trip Time and Timeout",
+      "TCP Round Trip Time and Timeout",
+      "TCP Round Trip Time and Timeout",
+      "TCP 신뢰성있는 데이터전송",
+      "TCP Sender (simplified)",
+      "TCP: retransmission scenarios",
+      "TCP retransmission scenarios (more)",
+      "TCP ACK generation [RFC 1122, RFC 2581]",
+      "Fast Retransmit",
+      "TCP fast retransmit",
+      "TCP 흐름 제어(Flow Control)",
+      "TCP Flow control: 동작원리",
+      "TCP 연결 관리",
+      "TCP 연결 관리",
+      "TCP 연결 관리",
+      "TCP 연결관리 상태도"
+    ],
+    "topic_changes": [
+      {
+        "from_page": 1,
+        "to_page": 2,
+        "title_similarity": 0.5213342308998108,
+        "keyword_overlap": 1,
+        "is_topic_change": false,
+        "from_title": "컴퓨터 네트워크",
+        "to_title": "TCP개요"
+      },
+      {
+        "from_page": 2,
+        "to_page": 3,
+        "title_similarity": 0.8451760411262512,
+        "keyword_overlap": 11,
+        "is_topic_change": false,
+        "from_title": "TCP개요",
+        "to_title": "TCP segment structure"
+      },
+      {
+        "from_page": 3,
+        "to_page": 4,
+        "title_similarity": 0.7462980151176453,
+        "keyword_overlap": 12,
+        "is_topic_change": false,
+        "from_title": "TCP segment structure",
+        "to_title": "TCP seq. #'s and ACKs"
+      },
+      {
+        "from_page": 4,
+        "to_page": 5,
+        "title_similarity": 0.3575528562068939,
+        "keyword_overlap": 7,
+        "is_topic_change": false,
+        "from_title": "TCP seq. #'s and ACKs",
+        "to_title": "tcp.port:=8888"
+      },
+      {
+        "from_page": 5,
+        "to_page": 6,
+        "title_similarity": 0.27808550000190735,
+        "keyword_overlap": 86,
+        "is_topic_change": false,
+        "from_title": "tcp.port:=8888",
+        "to_title": "```"
+      },
+      {
+        "from_page": 6,
+        "to_page": 7,
+        "title_similarity": 0.33142054080963135,
+        "keyword_overlap": 19,
+        "is_topic_change": false,
+        "from_title": "```",
+        "to_title": "14.651150 7168 SYN 8888"
+      },
+      {
+        "from_page": 7,
+        "to_page": 8,
+        "title_similarity": 0.3347490131855011,
+        "keyword_overlap": 1,
+        "is_topic_change": true,
+        "from_title": "14.651150 7168 SYN 8888",
+        "to_title": "TCP Round Trip Time and Timeout"
+      },
+      {
+        "from_page": 8,
+        "to_page": 9,
+        "title_similarity": 0.9999998807907104,
+        "keyword_overlap": 11,
+        "is_topic_change": false,
+        "from_title": "TCP Round Trip Time and Timeout",
+        "to_title": "TCP Round Trip Time and Timeout"
+      },
+      {
+        "from_page": 9,
+        "to_page": 10,
+        "title_similarity": 0.9999998807907104,
+        "keyword_overlap": 9,
+        "is_topic_change": false,
+        "from_title": "TCP Round Trip Time and Timeout",
+        "to_title": "TCP Round Trip Time and Timeout"
+      },
+      {
+        "from_page": 10,
+        "to_page": 11,
+        "title_similarity": 0.5872853398323059,
+        "keyword_overlap": 2,
+        "is_topic_change": false,
+        "from_title": "TCP Round Trip Time and Timeout",
+        "to_title": "TCP 신뢰성있는 데이터전송"
+      },
+      {
+        "from_page": 11,
+        "to_page": 12,
+        "title_similarity": 0.5246384739875793,
+        "keyword_overlap": 4,
+        "is_topic_change": false,
+        "from_title": "TCP 신뢰성있는 데이터전송",
+        "to_title": "TCP Sender (simplified)"
+      },
+      {
+        "from_page": 12,
+        "to_page": 13,
+        "title_similarity": 0.6223625540733337,
+        "keyword_overlap": 2,
+        "is_topic_change": false,
+        "from_title": "TCP Sender (simplified)",
+        "to_title": "TCP: retransmission scenarios"
+      },
+      {
+        "from_page": 13,
+        "to_page": 14,
+        "title_similarity": 0.9423570036888123,
+        "keyword_overlap": 9,
+        "is_topic_change": false,
+        "from_title": "TCP: retransmission scenarios",
+        "to_title": "TCP retransmission scenarios (more)"
+      },
+      {
+        "from_page": 14,
+        "to_page": 15,
+        "title_similarity": 0.6376485228538513,
+        "keyword_overlap": 4,
+        "is_topic_change": false,
+        "from_title": "TCP retransmission scenarios (more)",
+        "to_title": "TCP ACK generation [RFC 1122, RFC 2581]"
+      },
+      {
+        "from_page": 15,
+        "to_page": 16,
+        "title_similarity": 0.31832155585289,
+        "keyword_overlap": 1,
+        "is_topic_change": true,
+        "from_title": "TCP ACK generation [RFC 1122, RFC 2581]",
+        "to_title": "Fast Retransmit"
+      },
+      {
+        "from_page": 16,
+        "to_page": 17,
+        "title_similarity": 0.7078462839126587,
+        "keyword_overlap": 2,
+        "is_topic_change": false,
+        "from_title": "Fast Retransmit",
+        "to_title": "TCP fast retransmit"
+      },
+      {
+        "from_page": 17,
+        "to_page": 18,
+        "title_similarity": 0.6878342032432556,
+        "keyword_overlap": 1,
+        "is_topic_change": false,
+        "from_title": "TCP fast retransmit",
+        "to_title": "TCP 흐름 제어(Flow Control)"
+      },
+      {
+        "from_page": 18,
+        "to_page": 19,
+        "title_similarity": 0.8758755326271057,
+        "keyword_overlap": 8,
+        "is_topic_change": false,
+        "from_title": "TCP 흐름 제어(Flow Control)",
+        "to_title": "TCP Flow control: 동작원리"
+      },
+      {
+        "from_page": 19,
+        "to_page": 20,
+        "title_similarity": 0.7829797863960266,
+        "keyword_overlap": 6,
+        "is_topic_change": false,
+        "from_title": "TCP Flow control: 동작원리",
+        "to_title": "TCP 연결 관리"
+      },
+      {
+        "from_page": 20,
+        "to_page": 21,
+        "title_similarity": 1.0,
+        "keyword_overlap": 10,
+        "is_topic_change": false,
+        "from_title": "TCP 연결 관리",
+        "to_title": "TCP 연결 관리"
+      },
+      {
+        "from_page": 21,
+        "to_page": 22,
+        "title_similarity": 1.0,
+        "keyword_overlap": 17,
+        "is_topic_change": false,
+        "from_title": "TCP 연결 관리",
+        "to_title": "TCP 연결 관리"
+      },
+      {
+        "from_page": 22,
+        "to_page": 23,
+        "title_similarity": 0.904566764831543,
+        "keyword_overlap": 8,
+        "is_topic_change": false,
+        "from_title": "TCP 연결 관리",
+        "to_title": "TCP 연결관리 상태도"
+      }
+    ],
+    "matrix_stats": {
+      "title": {
+        "min": 0.006891143042594194,
+        "max": 0.8649468421936035,
+        "mean": 0.33652928471565247
+      },
+      "content": {
+        "min": 0.026417572051286697,
+        "max": 0.8026099801063538,
+        "mean": 0.4026547074317932
+      }
+    }
+  },
+  "similarity_matrix_shape": [
+    23,
+    406
+  ]
+}

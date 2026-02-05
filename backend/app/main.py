@@ -77,6 +77,9 @@ app.add_middleware(
     allow_headers=["*"], # 모든 헤더 허용
 )
 
+from .sync_experiments import register_experiment_routes 
+register_experiment_routes(app, BASE_DIR) # 실험용 라우트 등록
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """앱 시작/종료 시 실행되는 컨텍스트 매니저"""
