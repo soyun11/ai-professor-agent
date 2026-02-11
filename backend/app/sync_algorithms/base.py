@@ -426,12 +426,14 @@ class BaseSyncAlgorithm(ABC):
         for page_idx, seg_idx, score in path:
             if score >= confidence_threshold:
                 reliable_anchors.append(SyncAnchor(
-                    page=page_idx + 1,
-                    time=segments[seg_idx].start,
+                    page=pages[page_idx].page_num, # 디버깅을 위한 수정
+                    time = segments[seg_idx].start + 0.5 * (segments[seg_idx].end - segments[seg_idx].start), # 디버깅을 위한 수정
                     confidence=score,
                     method=self.name
                 ))
-        
+        if reliable_anchors:
+            print("[DEBUG] reliable anchors pages:", [a.page for a in reliable_anchors[:10]])
+
         # 4. 보간
         total_duration = segments[-1].end if segments else 0
         final_anchors = self.interpolate_anchors(

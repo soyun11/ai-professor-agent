@@ -105,7 +105,7 @@ class HybridAlgorithm(BaseSyncAlgorithm):
                 keyword_matrix = (keyword_matrix - keyword_matrix.min()) / (keyword_matrix.max() - keyword_matrix.min())
             
             # 코사인 유사도는 이미 -1 ~ 1 범위이므로 0 ~ 1로 변환
-            cosine_matrix = (cosine_matrix + 1) / 2
+            # cosine_matrix = (cosine_matrix + 1) / 2
         
         # 가중 평균
         hybrid_matrix = (
@@ -143,7 +143,10 @@ class HybridAlgorithm(BaseSyncAlgorithm):
         if keyword_normalized.max() > keyword_normalized.min():
             keyword_normalized = (keyword_normalized - keyword_normalized.min()) / (keyword_normalized.max() - keyword_normalized.min())
         
-        cosine_normalized = (cosine_matrix + 1) / 2
+        # cosine_matrix가 이미 0~1이면 그대로, -1~1이면 변환
+        cosine_normalized = cosine_matrix.copy()
+        if cosine_normalized.min() < 0:
+            cosine_normalized = (cosine_normalized + 1) / 2
         
         hybrid_matrix = (
             self.keyword_weight * keyword_normalized +

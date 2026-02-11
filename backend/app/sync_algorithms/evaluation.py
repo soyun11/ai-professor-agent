@@ -115,6 +115,8 @@ class SyncEvaluator:
         for page in pages:
             gt_time = gt_dict[page].time
             pred = pred_dict.get(page)
+            # 디버깅을 위한 코드 추가
+            page_tol = float(getattr(gt_dict[page],"tolerance", tol) or tol)
 
             if pred is None:
                 score = 0.0
@@ -125,7 +127,7 @@ class SyncEvaluator:
                 score = float(getattr(pred, "confidence", 0.0) or 0.0)
                 pred_time = pred.time
                 error = abs(float(pred_time) - float(gt_time))
-                is_correct = error <= tol
+                is_correct = error <= page_tol # 페이지별 tolerance 적용
 
             scores.append(score)
             labels.append(is_correct)

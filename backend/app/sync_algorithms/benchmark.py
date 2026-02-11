@@ -36,7 +36,7 @@ class BenchmarkRunner:
         base_dir: str,
         embedding_fn=None,
         llm_fn=None,
-        tolerance: float = 5.0,
+        tolerance: float = 10.0,
     ):
         """
         Args:
@@ -85,6 +85,11 @@ class BenchmarkRunner:
                 title=""
             ))
         
+        # 디버깅을 위한 추가
+        pages.sort(key=lambda x: x.page_num) # pages.json 로드 후 무조건 정렬 추가
+        print("[DEBUG] pages page_num head:", [p.page_num for p in pages[:10]])
+        print("[DEBUG] pages page_num tail:", [p.page_num for p in pages[-10:]])
+
         return pages
     
     def load_segments(

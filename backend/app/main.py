@@ -1246,6 +1246,15 @@ def get_pages_info(lecture_id: int):
 # =============================================================================
 @app.post("/lectures/{lecture_id}/auto_sync")
 def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
+    # 디버깅을 위한 코드 추가
+    print("=== SYNC DEBUG SNAPSHOT ===")
+    print("BASE_DIR:", BASE_DIR)
+    print("CWD:", os.getcwd())
+    print("pages_json_path:", pages_json_path, "exists:", pages_json_path.exists())
+    print("pages_count:", len(pages), "first_page:", pages[0].get("page") if pages else None)
+    print("transcript_count:", len(transcript_rows), "first_start:", float(transcript_rows[0].start) if transcript_rows else None)
+    print("===========================")
+
     """
     임베딩 + 키워드 스포팅 + 신뢰도 기반 보간법을 활용한 PDF 페이지-음성 자막 자동 동기화
 

@@ -90,6 +90,13 @@ def main():
     )
     
     parser.add_argument(
+        "--tolerance", "-t",
+        type=float,
+        default=5.0,
+        help="정답 판정 허용 오차 (초, 기본: 5.0)"
+    )
+    
+    parser.add_argument(
         "--base-dir",
         type=str,
         default="./data",
@@ -177,6 +184,7 @@ def main():
     print(f"알고리즘: {algorithms}")
     print(f"그룹화: {args.grouping} ({args.group_duration}초)")
     print(f"신뢰도 임계값: {args.confidence_threshold}")
+    print(f"정답 허용 오차: {args.tolerance}초")
     print(f"데이터 디렉토리: {args.base_dir}")
     
     # Ground Truth 확인
@@ -195,6 +203,7 @@ def main():
         base_dir=args.base_dir,
         embedding_fn=embedding_fn,
         llm_fn=llm_fn,
+        tolerance=args.tolerance,
     )
     
     results = runner.run_full_benchmark(
@@ -210,7 +219,7 @@ def main():
     print("📊 평가 결과")
     print("="*70)
     
-    summary = results.get("summary", {}).get("evaluations", {})
+    summary = results.get("summary", {}).get("aggregated", {})
     
     # 알고리즘 이름 매핑
     algo_display_names = {
@@ -236,8 +245,8 @@ def main():
         data = summary[algo_name]
         display_name = algo_display_names.get(algo_name, algo_name)
         
-        if "avg_f1" in data:
-            print(f"│ {display_name:<18} │ {data['avg_f1']:^10.4f} │ {data['avg_precision']:^10.4f} │ "
+        if "avg_f1_score" in data:
+            print(f"│ {display_name:<18} │ {data['avg_f1_score']:^10.4f} │ {data['avg_precision']:^10.4f} │ "
                   f"{data['avg_recall']:^10.4f} │ {data['avg_roc_auc']:^10.4f} │")
         else:
             print(f"│ {display_name:<18} │ {'N/A':^10} │ {'N/A':^10} │ {'N/A':^10} │ {'N/A':^10} │")

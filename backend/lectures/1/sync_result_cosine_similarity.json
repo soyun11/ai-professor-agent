@@ -5,7 +5,7 @@
     "grouping": "none",
     "group_duration": 10.0,
     "group_count": 5,
-    "confidence_threshold": 0.4
+    "confidence_threshold": 0.5
   },
   "anchors": [
     {
@@ -46,9 +46,9 @@
     },
     {
       "page": 7,
-      "time": 612.62,
-      "confidence": 0.4760901629924774,
-      "method": "cosine_similarity"
+      "time": 672.735,
+      "confidence": 0.3,
+      "method": "interpolation"
     },
     {
       "page": 8,
@@ -268,8 +268,8 @@
         0.6805581450462341
       ]
     ],
-    "reliable_count": 23,
-    "confidence_threshold": 0.4,
+    "reliable_count": 22,
+    "confidence_threshold": 0.5,
     "similarity_distribution": {
       "min": 0.04918242245912552,
       "max": 0.8099697828292847,

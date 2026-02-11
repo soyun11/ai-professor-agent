@@ -131,8 +131,20 @@ class CosineSimilarityAlgorithm(BaseSyncAlgorithm):
         page_vecs = np.array(page_embeddings, dtype=np.float32)
         seg_vecs = np.array(segment_embeddings, dtype=np.float32)
         
+        # 디버깅을 위한 코드 추가
         # 유사도 행렬 계산
-        return SimilarityCalculator.compute_similarity_matrix(page_vecs, seg_vecs)
+        cosine_matrix = SimilarityCalculator.compute_similarity_matrix(page_vecs, seg_vecs)
+
+        # 디버깅 출력 (범위 확인)
+        print(
+            "COSINE RANGE:",
+            float(cosine_matrix.min()),
+            float(cosine_matrix.max()),
+            float(cosine_matrix.mean()),
+        )
+
+        return cosine_matrix
+
     
     def compute_pairwise_similarity(
         self,

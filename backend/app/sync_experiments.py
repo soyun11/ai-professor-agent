@@ -209,6 +209,16 @@ def register_experiment_routes(app: FastAPI, base_dir: Path):
             lecture_id, session, grouping, group_duration, group_count
         )
         
+        # 디버깅을 위한 코드 추가
+        print("=== SYNC DEBUG SNAPSHOT ===")
+        print("BASE_DIR:", BASE_DIR)
+        print("CWD:", os.getcwd())
+        print("pages_json_path:", pages_json_path, "exists:", pages_json_path.exists())
+        print("pages_count:", len(pages), "first_page:", pages[0].get("page") if pages else None)
+        print("transcript_count:", len(transcript_rows), "first_start:", float(transcript_rows[0].start) if transcript_rows else None)
+        print("===========================")
+
+        
         if not pages:
             raise HTTPException(status_code=400, detail="페이지 데이터가 없습니다.")
         if not segments:
