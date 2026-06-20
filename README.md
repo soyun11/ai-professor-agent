@@ -407,7 +407,7 @@ Host test223
 | STT (30분 오디오) | ~3-5분 |
 | OCR (10페이지 PDF) | ~2-3분 |
 | RAG Index (30청크) | ~10초 |
-| Auto Sync | ~15초~1분 (강의 길이에 따라) |
+| Auto Sync | 약 15초 ~ 1분 (강의 길이에 따라) |
 | Summary | ~5초 |
 | Quiz | ~5초 |
 
