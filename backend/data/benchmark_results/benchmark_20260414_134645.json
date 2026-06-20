@@ -1,0 +1,47 @@
+{
+  "timestamp": "20260414_134645",
+  "params": {
+    "lecture_ids": [
+      1
+    ],
+    "algorithms": [
+      "cosine_similarity"
+    ],
+    "grouping": "duration",
+    "group_duration": 30.0,
+    "confidence_threshold": 0.05,
+    "tolerance": 10.0
+  },
+  "lecture_results": [
+    {
+      "lecture_id": 1,
+      "num_pages": 23,
+      "num_segments": 68,
+      "num_ground_truth": 23,
+      "results": {
+        "cosine_similarity": {
+          "error": "Command '['ssh', 'test223', 'cd /mnt/home_dnlab/sypark/whisper-gpu && source venv/bin/activate && python3 embedding_server.py /mnt/home_dnlab/sypark/whisper-gpu/embed_input.json /mnt/home_dnlab/sypark/whisper-gpu/embed_output.json']' returned non-zero exit status 1.",
+          "metrics": null,
+          "time_elapsed": 11.132919073104858
+        }
+      },
+      "error": null
+    }
+  ],
+  "summary": {
+    "evaluations": {
+      "cosine_similarity": {
+        "error": "No valid results",
+        "num_lectures": 0
+      }
+    },
+    "rankings": {
+      "by_f1": [],
+      "by_auc": []
+    },
+    "best_algorithm": {
+      "by_f1": null,
+      "by_auc": null
+    }
+  }
+}

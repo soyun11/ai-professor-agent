@@ -78,6 +78,9 @@ app.add_middleware(
 )
 
 from .sync_experiments import register_experiment_routes 
+
+from .sync_algorithms.base import TextProcessor
+
 register_experiment_routes(app, BASE_DIR) # 실험용 라우트 등록
 
 @asynccontextmanager
@@ -1521,11 +1524,15 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
     # 페이지3은 자막2와 가장 비슷 (0.88)
     
     # ===== [STEP 6] Keyword Spotting (키워드 가산점) =====
-    # 각 페이지의 키워드 추출
-    page_keywords = [get_keywords_local(t) for t in page_texts]
+    # # 각 페이지의 키워드 추출
+    # page_keywords = [get_keywords_local(t) for t in page_texts]
+    # # 각 자막 그룹의 키워드 추출
+    # segment_keywords = [get_keywords_local(g["text"]) for g in segment_groups]
+    # 각 페이지의 키워드 추출 (kiwipiepy 형태소 분석)
+    page_keywords = [TextProcessor.extract_keywords(t) for t in page_texts]
     # 각 자막 그룹의 키워드 추출
-    segment_keywords = [get_keywords_local(g["text"]) for g in segment_groups]
-    
+    segment_keywords = [TextProcessor.extract_keywords(g["text"]) for g in segment_groups]
+        
     # 키워드 점수 행렬 생성
     num_segments = len(segment_groups) # 자막 그룹 개수
     keyword_matrix = np.zeros((num_pages, num_segments)) # 모두 0으로 채운 행렬 생성
@@ -1544,7 +1551,8 @@ def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
             # 공통 키워드 찾기 및 점수 계산
             common_words = p_set & s_set # 두 집합의 교집합인 공통 키워드
             if common_words: # 공통 키워드가 있으면
-                score_boost = len(common_words) * 0.5 # 공통 키워드 개수 x 0.5
+                # score_boost = len(common_words) * 0.5 # 공통 키워드 개수 x 0.5
+                score_boost = len(common_words) * 0.2
                 keyword_matrix[i][j] = score_boost # 그 점수를 행렬에 저장
                 
                 # 오차가 큰 부분을 keyword_matrix로 출력해보기

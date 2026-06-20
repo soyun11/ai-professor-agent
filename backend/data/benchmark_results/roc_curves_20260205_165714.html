@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ROC Curves</title>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0; padding: 20px; background: #f8f9fa;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { text-align: center; color: #333; }
+        .chart-container {
+            background: white; padding: 30px; border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-top: 20px;
+        }
+        .legend-info {
+            background: #fff3e0; padding: 15px; border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📈 ROC Curves</h1>
+        
+        <div class="legend-info">
+            <strong>ROC Curve 해석:</strong><br>
+            - 좌상단에 가까울수록 좋은 성능<br>
+            - 대각선(점선)은 랜덤 분류기 (AUC = 0.5)<br>
+            - AUC가 1에 가까울수록 좋음
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="rocChart"></canvas>
+        </div>
+    </div>
+    
+    <script>
+        const ctx = document.getElementById('rocChart').getContext('2d');
+        const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+        
+        const datasets = [
+            // 대각선 (랜덤 분류기)
+            {
+                label: 'Random (AUC=0.5)',
+                data: [{x: 0, y: 0}, {x: 1, y: 1}],
+                borderColor: '#ccc',
+                borderDash: [5, 5],
+                fill: false,
+                pointRadius: 0
+            }
+        ];
+        
+        // TODO: 실제 ROC 데이터 추가
+        // 현재는 샘플 데이터
+        
+        new Chart(ctx, {
+            type: 'scatter',
+            data: { datasets: datasets },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { title: { display: true, text: 'False Positive Rate' }, min: 0, max: 1 },
+                    y: { title: { display: true, text: 'True Positive Rate' }, min: 0, max: 1 }
+                },
+                plugins: {
+                    title: { display: true, text: 'ROC Curve - All Algorithms' }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

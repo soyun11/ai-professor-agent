@@ -65,95 +65,53 @@ class SyncResult:
 class TextProcessor:
     """텍스트 전처리 유틸리티"""
     
+    # Kiwi 형태소 분석기 (클래스 레벨에서 한 번만 초기화)
+    try:
+        from kiwipiepy import Kiwi
+        _kiwi = Kiwi()
+    except ImportError:
+        _kiwi = None
+    
     @staticmethod
     def normalize(text: str) -> str:
-        """텍스트 정규화
-        
-        Args:
-            text: 원본 텍스트
-            
-        Returns:
-            정규화된 텍스트 (소문자, 공백 정리, 특수문자 제거)
-        """
         text = (text or "").strip().lower()
         text = re.sub(r"\s+", " ", text)
-        text = re.sub(r"[^0-9a-z가-힣 ]+", "", text)
-        return text
+        text = re.sub(r"[^0-9a-z가-힣 ]+", " ", text)
+        return text.strip()
     
     @staticmethod
     def extract_keywords(text: str, min_length: int = 2) -> set:
-        """키워드 추출
+        if TextProcessor._kiwi is not None:
+            # kiwipiepy 형태소 분석
+            try:
+                result = TextProcessor._kiwi.analyze(text)
+                tokens = result[0][0]
+                keywords = set()
+                for token in tokens:
+                    if token.tag.startswith('NN') or token.tag in ('SL', 'SN'):
+                        w = token.form.lower()
+                        if len(w) >= min_length:
+                            keywords.add(w)
+                            # 영어+한국어 혼합 분리: "tcp개요" → "tcp", "개요"
+                            parts = re.findall(r'[a-z0-9]+|[가-힣]+', w)
+                            for p in parts:
+                                if len(p) >= min_length:
+                                    keywords.add(p)
+                return keywords
+            except Exception:
+                pass
         
-        Args:
-            text: 원본 텍스트
-            min_length: 최소 키워드 길이
-            
-        Returns:
-            키워드 집합
-        """
+        # fallback (kiwipiepy 없을 때)
         normalized = TextProcessor.normalize(text)
-        return set(w for w in normalized.split() if len(w) >= min_length)
-    
-    @staticmethod
-    def extract_title(text: str, max_length: int = 50) -> str:
-        """텍스트에서 제목 추출 (첫 번째 줄)
-        
-        Args:
-            text: 원본 텍스트
-            max_length: 최대 제목 길이
-            
-        Returns:
-            추출된 제목
-        """
-        text = (text or "").strip()
-        if not text:
-            return ""
-        
-        # 줄바꿈으로 분리하여 첫 번째 줄 추출
-        lines = text.split("\n")
-        first_line = lines[0].strip() if lines else ""
-        
-        # 마침표로 분리하여 첫 문장 추출
-        if not first_line:
-            sentences = text.split(".")
-            first_line = sentences[0].strip() if sentences else ""
-        
-        # 길이 제한
-        if len(first_line) > max_length:
-            first_line = first_line[:max_length] + "..."
-            
-        return first_line
-    
-    @staticmethod
-    def chunk_text(text: str, max_chars: int = 900, overlap: int = 150) -> List[str]:
-        """긴 텍스트를 청크로 분할
-        
-        Args:
-            text: 원본 텍스트
-            max_chars: 청크당 최대 문자 수
-            overlap: 청크 간 겹침 문자 수
-            
-        Returns:
-            청크 리스트
-        """
-        text = (text or "").strip()
-        if not text:
-            return []
-        
-        chunks = []
-        i = 0
-        n = len(text)
-        
-        while i < n:
-            end = min(n, i + max_chars)
-            chunk = text[i:end].strip()
-            if chunk:
-                chunks.append(chunk)
-            if end == n:
-                break
-            i = max(0, end - overlap)
-            
-        return chunks
+        tokens = set()
+        for w in normalized.split():
+            if len(w) >= min_length:
+                tokens.add(w)
+                parts = re.findall(r'[a-z0-9]+|[가-힣]+', w)
+                for p in parts:
+                    if len(p) >= min_length:
+                        tokens.add(p)
+        return tokens
 
 
 class SimilarityCalculator:

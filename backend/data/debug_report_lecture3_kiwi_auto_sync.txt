@@ -1,0 +1,201 @@
+
+================================================================================
+  Lecture 3 | tolerance=±30초 | algo=kiwi_auto_sync | autosync_eval_20260409_224354.json
+================================================================================
+  Page |      예측 |      정답 |     오차 |    신뢰도 | 결과 | 실패 이유
+  ---------------------------------------------------------------------------
+     1 |   01:37 |   00:00 |    98s |  0.500 | ❌  | 경계값 (시작/끝 고정값)
+     2 |   03:15 |   01:14 |   121s |  0.500 | ❌  | 경계값 (시작/끝 고정값)
+     3 |   04:18 |   05:10 |    52s |  0.500 | ❌  | 경계값 (시작/끝 고정값)
+     6 |   07:27 |   06:10 |    77s |  0.500 | ❌  | 경계값 (시작/끝 고정값)
+     7 |   08:30 |   07:07 |    83s |  0.500 | ❌  | 경계값 (시작/끝 고정값)
+     8 |   09:33 |   07:54 |    99s |  0.500 | ❌  | 경계값 (시작/끝 고정값)
+     9 |   10:36 |   08:37 |   119s |  0.500 | ❌  | 경계값 (시작/끝 고정값)
+    10 |   11:39 |   10:45 |    54s |  0.500 | ❌  | 경계값 (시작/끝 고정값)
+    11 |   12:20 |   12:02 |    19s |  0.500 | ✅  | 
+    12 |   13:01 |   12:44 |    18s |  0.500 | ✅  | 
+    13 |   13:42 |   13:19 |    24s |  0.500 | ✅  | 
+    14 |   14:23 |   14:23 |     1s |  0.500 | ✅  | 
+    15 |   15:02 |   14:50 |    13s |  0.500 | ✅  | 
+    16 |   15:41 |   15:16 |    26s |  0.500 | ✅  | 
+    17 |   16:20 |   16:02 |    19s |  0.500 | ✅  | 
+    18 |   16:59 |   17:13 |    13s |  0.500 | ✅  | 
+    19 |   17:38 |   17:52 |    13s |  0.500 | ✅  | 
+    20 |   18:17 |   18:05 |    13s |  0.500 | ✅  | 
+    21 |   18:57 |   19:26 |    29s |  0.500 | ✅  | 
+    23 |   21:04 |   21:17 |    12s |  0.500 | ✅  | 
+    24 |   22:08 |   22:44 |    35s |  0.500 | ❌  | 경계값 (시작/끝 고정값)
+    25 |   23:12 |   23:47 |    34s |  0.500 | ❌  | 경계값 (시작/끝 고정값)
+    26 |   24:16 |   25:47 |    90s |  0.500 | ❌  | 경계값 (시작/끝 고정값)
+    27 |   25:20 |   27:41 |   140s |  0.500 | ❌  | 경계값 (시작/끝 고정값)
+    28 |   26:24 |   28:18 |   113s |  0.500 | ❌  | 경계값 (시작/끝 고정값)
+    29 |   27:28 |   28:31 |    62s |  0.500 | ❌  | 경계값 (시작/끝 고정값)
+    30 |   28:32 |   28:45 |    13s |  0.500 | ✅  | 
+    31 |   29:36 |   30:39 |    63s |  0.500 | ❌  | 경계값 (시작/끝 고정값)
+    32 |   30:40 |   32:26 |   106s |  0.500 | ❌  | 경계값 (시작/끝 고정값)
+    33 |   31:44 |   31:47 |     3s |  0.500 | ✅  | 
+    34 |   32:48 |   32:31 |    17s |  0.500 | ✅  | 
+    35 |   33:52 |   33:12 |    40s |  0.500 | ❌  | 경계값 (시작/끝 고정값)
+    36 |   34:56 |   35:10 |    14s |  0.500 | ✅  | 
+    37 |   36:00 |   35:40 |    20s |  0.500 | ✅  | 
+    38 |   37:03 |   37:19 |    15s |  0.500 | ✅  | 
+    39 |   38:07 |   38:14 |     6s |  0.500 | ✅  | 
+    40 |   38:50 |   38:49 |     2s |  0.500 | ✅  | 
+    41 |   39:33 |   39:39 |     5s |  0.500 | ✅  | 
+    42 |   40:16 |   39:59 |    18s |  0.500 | ✅  | 
+    43 |   40:59 |   40:25 |    35s |  0.500 | ❌  | 경계값 (시작/끝 고정값)
+================================================================================
+  F1=0.550 | P=0.550 | R=0.550 | AUC=0.000
+  TP=22 | FP=18 | FN=18 | 총 40페이지
+================================================================================
+
+
+################################################################################
+  실패 페이지 상세 분석 (Lecture 3 / kiwi_auto_sync)
+################################################################################
+
+  ── Page 1 ──────────────────────────────────────────
+  원인: 경계값 (시작/끝 고정값)
+  PDF  키워드 (15개): addressing, algorithms, bgp, controller, conventions, datagram, error, format, forwarding, functions, handling, host, icmp, implemented, in
+  정답 근처 음성 키워드 (00:00 ±60s): icmp, ip, sdn, 결과, 결정, 계산, 계층, 관련, 그램, 기능, 내용, 네트워크, 데이터, 루터, 루팅
+  → 공통 키워드: icmp, ip, sdn
+  예측 근처 음성 키워드 (01:37 ±60s): 15, 1500, 16, 20, 60, 64, icmp, ip, mtu, 개선, 결정, 곱하기, 그램, 근처, 기능
+  → 공통 키워드: icmp, ip
+
+  ── Page 2 ──────────────────────────────────────────
+  원인: 경계값 (시작/끝 고정값)
+  PDF  키워드 (15개): 1500, 16, 20, 32, 40, 64, address, any, app, at, bit, bits, bytes, checksum, data
+  정답 근처 음성 키워드 (01:14 ±60s): 15, 20, 60, icmp, ip, sdn, 개선, 결과, 결정, 계산, 계층, 곱하기, 그램, 기능, 길이
+  → 공통 키워드: 20, ip
+  예측 근처 음성 키워드 (03:15 ±60s): 1500, 16, 64, don, ecn, eip, flag, fragment, id, ip, ipv, mtu, offset, tcp, traceroute
+  → 공통 키워드: 1500, 16, 64, ecn, fragment, ip, offset, tcp, ttl, udp
+
+  ── Page 3 ──────────────────────────────────────────
+  원인: 경계값 (시작/끝 고정값)
+  PDF  키워드 (15개): 00000001, 11, 11011111, 32, 802, 802.11, address, addressing, and, associated, between, bit, connection, decimal, dotted
+  정답 근처 음성 키워드 (05:10 ±60s): 20, 32, 40, ifconfig, ip, ipconfig, ipv, tcp, 가능, 경우, 구분, 기록, 길이, 내용, 다음
+  → 공통 키워드: 32, ip
+  예측 근처 음성 키워드 (04:18 ±60s): 16, 20, 32, 40, don, flag, fragment, id, ifconfig, ip, ipconfig, ipv, offset, tcp, udp
+  → 공통 키워드: 32, ip
+
+  ── Page 6 ──────────────────────────────────────────
+  원인: 경계값 (시작/끝 고정값)
+  PDF  키워드 (15개): addresses, an, bits, can, common, consisting, device, devices, each, have, high, host, in, interfaces, intervening
+  정답 근처 음성 키워드 (06:10 ±60s): 1.2, 1.3, ifconfig, ip, ipconfig, ipv, 가능, 검토, 경우, 공학과, 구간, 구분, 그림, 나머지, 네트워크
+  → 공통 키워드: ip
+  예측 근처 음성 키워드 (07:27 ±60s): 1.2, 1.3, 24, 30, 구간, 그때, 그룹, 그림, 나머지, 네트워크, 다음, 단위, 대로, 동일, 라우터
+  → 공통 키워드: ❌ 없음
+
+  ── Page 7 ──────────────────────────────────────────
+  원인: 경계값 (시작/끝 고정값)
+  PDF  키워드 (15개): 24, address, bits, called, creating, defining, detach, each, for, from, high, host, interface, ip, is
+  정답 근처 음성 키워드 (07:07 ±60s): 1.2, 1.3, 24, ip, 검토, 공학과, 구간, 그때, 그룹, 그림, 나머지, 네트워크, 다음, 단위, 대로
+  → 공통 키워드: 24, ip
+  예측 근처 음성 키워드 (08:30 ±60s): 16, 24, 30, cidr, class, domain, inter, ip, list, routing, 고민, 구간, 구분, 그때, 노테이션
+  → 공통 키워드: 24, ip
+
+  ── Page 8 ──────────────────────────────────────────
+  원인: 경계값 (시작/끝 고정값)
+  PDF  키워드 (10개): 24, addresses, are, layer, network, subnet, subnets, the, what, where
+  정답 근처 음성 키워드 (07:54 ±60s): 16, 24, 30, cidr, ip, 구간, 그때, 그룹, 그림, 네트워크, 노테이션, 다음, 단위, 대로, 동일
+  → 공통 키워드: 24
+  예측 근처 음성 키워드 (09:33 ±60s): 16, 16.0, 23, 24, bgp, cidr, class, domain, inter, ip, list, notation, portion, routing, subnet
+  → 공통 키워드: 24, subnet
+
+  ── Page 9 ──────────────────────────────────────────
+  원인: 경계값 (시작/끝 고정값)
+  PDF  키워드 (15개): 00000000, 00010000, 00010111, 11001000, 23, a.b.c.d, address, addressing, arbitrary, bits, cider, cidr, classless, format, host
+  정답 근처 음성 키워드 (08:37 ±60s): 16, 24, 30, cidr, class, domain, inter, ip, list, routing, 고민, 구간, 구분, 그때, 노테이션
+  → 공통 키워드: cidr, ip, routing
+  예측 근처 음성 키워드 (10:36 ±60s): 16, 16.0, 23, bgp, cidr, ip, kt, notation, portion, subnet, 나머지, 네트워크, 다음, 대부분, 대상
+  → 공통 키워드: 23, cidr, ip, portion, subnet
+
+  ── Page 10 ──────────────────────────────────────────
+  원인: 경계값 (시작/끝 고정값)
+  PDF  키워드 (15개): 1., actually, address, addresses, and, as, by, coded, config, configuration, dhcp, does, dynamic, dynamically, e.g.
+  정답 근처 음성 키워드 (10:45 ±60s): 16, 16.0, 23, bgp, cidr, configuration, dhcp, dynamic, host, ip, kt, lan, portion, protocol, subnet
+  → 공통 키워드: configuration, dhcp, dynamic, host, ip, protocol
+  예측 근처 음성 키워드 (11:39 ±60s): configuration, dhcp, discover, dynamic, host, ip, kt, lan, offer, protocol, 갱신, 공유, 기본, 네임, 네트워크
+  → 공통 키워드: configuration, dhcp, dynamic, host, ip, protocol
+
+  ── Page 24 ──────────────────────────────────────────
+  원인: 경계값 (시작/끝 고정값)
+  PDF  키워드 (15개): 12, 16, 168, 172, 172.16, 192, 192.168, 32, address, addressable, addresses, advantages, all, be, bit
+  정답 근처 음성 키워드 (22:44 ±60s): ip, isp, nat, net, tcp, udp, 가능, 가지, 공개, 공유, 공인, 관점, 구현, 기능, 내부
+  → 공통 키워드: ip, isp, nat, net
+  예측 근처 음성 키워드 (22:08 ±60s): ip, isp, nat, net, tcp, udp, 가능, 가지, 공개, 공유, 공인, 관점, 기능, 기술, 내부
+  → 공통 키워드: ip, isp, nat, net
+
+  ── Page 25 ──────────────────────────────────────────
+  원인: 경계값 (시작/끝 고정값)
+  PDF  키워드 (15개): address, as, clients, corresponding, datagram, datagrams, destination, every, fields, implementation, in, incoming, ip, layer, must
+  정답 근처 음성 키워드 (23:47 ±60s): 10, 10.1, 13876297, 5001, ip, nat, net, tcp, udp, 가능, 가지, 공유, 구현, 그림, 기능
+  → 공통 키워드: ip, nat
+  예측 근처 음성 키워드 (23:12 ±60s): 10, 10.1, ip, nat, net, tcp, udp, 가능, 가지, 공개, 공유, 관점, 구현, 그림, 기능
+  → 공통 키워드: ip, nat
+
+  ── Page 26 ──────────────────────────────────────────
+  원인: 경계값 (시작/끝 고정값)
+  PDF  키워드 (15개): 3345, 5001, 80, addr, address, arrives, changes, datagram, destination, from, host, lan, layer, nat, network
+  정답 근처 음성 키워드 (25:47 ±60s): 3345, ip, nat, net, tcp, 가능, 가지, 강제, 계층, 공유, 과정, 관점, 기능, 기준, 네트워크
+  → 공통 키워드: 3345, nat
+  예측 근처 음성 키워드 (24:16 ±60s): 10, 10.1, 13876297, 3345, 5001, 가능, 가지, 공유, 과정, 그림, 기준, 다음, 도착, 때문, 라우터
+  → 공통 키워드: 3345, 5001
+
+  ── Page 27 ──────────────────────────────────────────
+  원인: 경계값 (시작/끝 고정값)
+  PDF  키워드 (15개): address, and, argument, be, been, behind, but, by, cellular, client, connect, controversial, device, end, extensively
+  정답 근처 음성 키워드 (27:41 ±60s): 128, 20, 32, 40, ip, ipv, kt, lg, lte, nat, sk, tcp, 공간, 공유, 공인
+  → 공통 키워드: ipv, nat
+  예측 근처 음성 키워드 (25:20 ±60s): 13876297, 3345, 5001, ip, nat, net, tcp, 가능, 가지, 강제, 계층, 공유, 과정, 관점, 기능
+  → 공통 키워드: nat
+
+  ── Page 28 ──────────────────────────────────────────
+  원인: 경계값 (시작/끝 고정값)
+  PDF  키워드 (15개): 32, 40, additional, address, allocated, be, bit, byte, completely, different, enable, fixed, flows, forwarding, header
+  정답 근처 음성 키워드 (28:18 ±60s): 128, 20, 32, 40, ip, ipv, kt, lg, nat, sk, tcp, tos, 개념, 공간, 공유
+  → 공통 키워드: 32, 40, ipv
+  예측 근처 음성 키워드 (26:24 ±60s): ip, kt, lg, lte, nat, net, sk, tcp, 가지, 강제, 계층, 공유, 관점, 기능, 기술
+  → 공통 키워드: ❌ 없음
+
+  ── Page 29 ──────────────────────────────────────────
+  원인: 경계값 (시작/끝 고정값)
+  PDF  키워드 (15개): 128, addresses, among, as, at, available, bit, checksum, compared, concept, datagram, datagrams, defined, flow, flow.
+  정답 근처 음성 키워드 (28:31 ±60s): 128, 20, 32, 40, checksum, fragmentation, ip, ipv, nat, onlimits, option, tcp, tos, ttl, 개념
+  → 공통 키워드: 128, checksum, fragmentation, ipv
+  예측 근처 음성 키워드 (27:28 ±60s): 128, 32, ip, ipv, kt, lg, lte, nat, sk, tcp, 공간, 공유, 공인, 관점, 기술
+  → 공통 키워드: 128, ipv
+
+  ── Page 31 ──────────────────────────────────────────
+  원인: 경계값 (시작/끝 고정값)
+  PDF  키워드 (15개): and, as, connecting, connects, datagram, encapsulation, ethernet, frame, in, ipv, layer, link, network, payload, routers
+  정답 근처 음성 키워드 (30:39 ±60s): basic, checksum, extended, ip, ipv, lte, max, next, 가능, 가정, 가지, 기능, 기본, 기술, 내용
+  → 공통 키워드: ipv
+  예측 근처 음성 키워드 (29:36 ±60s): 128, 20, 40, basic, checksum, extended, fragmentation, ipv, max, next, onlimits, option, tcp, tos, ttl
+  → 공통 키워드: ipv
+
+  ── Page 32 ──────────────────────────────────────────
+  원인: 경계값 (시작/끝 고정값)
+  PDF  키워드 (15개): and, as, connecting, connects, datagram, encapsulation, ethernet, frame, in, ipv, layer, link, network, payload, routers
+  정답 근처 음성 키워드 (32:26 ±60s): ipv, lte, 검색, 구글, 기술, 네트워크, 논리, 단말기, 대로, 도입, 동시, 듀얼, 라우터, 레이어, 링크
+  → 공통 키워드: ipv
+  예측 근처 음성 키워드 (30:40 ±60s): basic, extended, ip, ipv, lte, max, next, 가능, 가지, 기능, 기본, 기술, 내용, 네트워크, 다음
+  → 공통 키워드: ipv
+
+  ── Page 35 ──────────────────────────────────────────
+  원인: 경계값 (시작/끝 고정값)
+  PDF  키워드 (15개): 25, 30, access, adoption, all, and, application, are, capable, changes, clients, counting, deployment, domains, for
+  정답 근처 음성 키워드 (33:12 ±60s): ipv, 검색, 구글, 구조, 기관, 기술, 네트워크, 논리, 단말기, 도입, 동시, 때문, 라우터, 보급, 브라우저
+  → 공통 키워드: ipv
+  예측 근처 음성 키워드 (33:52 ±60s): 20, ipv, 가지, 검색, 공부, 공유, 구글, 구조, 기관, 기본, 기술, 다음, 단말기, 도입, 동시
+  → 공통 키워드: ipv
+
+  ── Page 43 ──────────────────────────────────────────
+  원인: 경계값 (시작/끝 고정값)
+  PDF  키워드 (15개): 20, 2005, application, at, century, computing, devices, edge, infrastructure, intelligence, internet, level, massive, net, network
+  정답 근처 음성 키워드 (40:25 ±60s): and, ip, tcp, 가운데, 가지, 결합, 계층, 과정, 관점, 구조, 구현, 기능, 기본, 끝단, 내용
+  → 공통 키워드: ❌ 없음 (매칭 불가)
+  예측 근처 음성 키워드 (40:59 ±60s): and, ip, 가운데, 가지, 결합, 계층, 과정, 관점, 구조, 구현, 기능, 기본, 끝단, 내용, 네트워크
+  → 공통 키워드: ❌ 없음
+
+################################################################################

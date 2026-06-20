@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>동기화 알고리즘 평가 결과</title>
+    <meta charset="UTF-8">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { text-align: center; color: #333; margin-bottom: 30px; }
+        h2 { color: #333; border-bottom: 2px solid #4a90d9; padding-bottom: 10px; }
+        
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .result-table th {
+            background: #4a90d9;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .result-table td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        .result-table td:first-child { text-align: left; font-weight: 500; }
+        .result-table tr:hover { background: #f5f9ff; }
+        .best { background: #e8f5e9 !important; font-weight: bold; }
+        
+        .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
+        .chart-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .chart-box h3 { margin-top: 0; color: #555; }
+        
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 동기화 알고리즘 평가 결과</h1>
+        
+        <div class="info-box">
+            <strong>실험 설정:</strong>
+            강의 [1, 2, 3] | 
+            그룹화: none (30.0초) |
+            Threshold: 0.4
+        </div>
+        
+        <h2>📋 성능 비교표</h2>
+        <table class="result-table">
+            <thead>
+                <tr>
+                    <th style="width:25%">방법</th>
+                    <th>F1</th>
+                    <th>Precision</th>
+                    <th>Recall</th>
+                    <th>ROC-AUC</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>1. Exact</td><td>0.0642</td><td>0.0634</td><td>0.0651</td><td>0.0000</td></tr><tr><td>2. Cosine</td><td>0.1349</td><td>0.1335</td><td>0.1364</td><td>0.6421</td></tr><tr><td>3. Hybrid(E&C)</td><td>0.1510</td><td>0.1490</td><td>0.1531</td><td>0.6173</td></tr><tr><td>5. Title-weighted</td><td>0.1221</td><td>0.1207</td><td>0.1236</td><td>0.5079</td></tr>
+            </tbody>
+        </table>
+        
+        <h2>📈 성능 그래프</h2>
+        <div class="charts">
+            <div class="chart-box">
+                <h3>F1 / Precision / Recall 비교</h3>
+                <canvas id="metricsChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <h3>ROC-AUC 비교</h3>
+                <canvas id="aucChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="charts">
+            <div class="chart-box" style="grid-column: span 2;">
+                <h3>🎯 종합 레이더 차트</h3>
+                <canvas id="radarChart" style="max-height: 400px;"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const algorithms = ["1. Exact", "2. Cosine", "3. Hybrid(E&C)", "5. Title-weighted"];
+        const f1Scores = [0.06423016480638272, 0.13492095472189763, 0.1509852117500101, 0.1221004419013848];
+        const precisions = [0.06338959321770242, 0.13352000207409712, 0.1490238780430894, 0.1206994892535843];
+        const recalls = [0.06513377926421404, 0.13642697881828317, 0.15309364548494983, 0.12360646599777035];
+        const aucs = [0.0, 0.6421356421356422, 0.6172799422799423, 0.5078743961352656];
+        
+        const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+        
+        // 1. 메트릭스 비교 차트
+        new Chart(document.getElementById('metricsChart'), {
+            type: 'bar',
+            data: {
+                labels: algorithms,
+                datasets: [
+                    { label: 'F1', data: f1Scores, backgroundColor: 'rgba(54, 162, 235, 0.7)' },
+                    { label: 'Precision', data: precisions, backgroundColor: 'rgba(255, 99, 132, 0.7)' },
+                    { label: 'Recall', data: recalls, backgroundColor: 'rgba(75, 192, 192, 0.7)' }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true, max: 1 } }
+            }
+        });
+        
+        // 2. AUC 차트
+        new Chart(document.getElementById('aucChart'), {
+            type: 'bar',
+            data: {
+                labels: algorithms,
+                datasets: [{ label: 'ROC-AUC', data: aucs, backgroundColor: colors }]
+            },
+            options: {
+                responsive: true,
+                scales: { y: { beginAtZero: true, max: 1 } }
+            }
+        });
+        
+        // 3. 레이더 차트
+        new Chart(document.getElementById('radarChart'), {
+            type: 'radar',
+            data: {
+                labels: ['F1', 'Precision', 'Recall', 'ROC-AUC'],
+                datasets: algorithms.map((algo, i) => ({
+                    label: algo,
+                    data: [f1Scores[i], precisions[i], recalls[i], aucs[i]],
+                    borderColor: colors[i],
+                    backgroundColor: colors[i].replace(')', ', 0.2)').replace('rgb', 'rgba').replace('#', 'rgba('),
+                    fill: true
+                }))
+            },
+            options: {
+                responsive: true,
+                scales: { r: { beginAtZero: true, max: 1 } }
+            }
+        });
+    </script>
+</body>
+</html>

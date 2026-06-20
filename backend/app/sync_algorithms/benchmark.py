@@ -649,7 +649,6 @@ def run_full_benchmark(
         confidence_threshold=confidence_threshold,
     )
 
-
 # CLI 인터페이스
 if __name__ == "__main__":
     import argparse
@@ -660,17 +659,53 @@ if __name__ == "__main__":
     parser.add_argument("--grouping", type=str, default="none", help="그룹화 방식")
     parser.add_argument("--group-duration", type=float, default=30.0, help="그룹화 시간(초)")
     parser.add_argument("--base-dir", type=str, default="./data", help="데이터 디렉토리")
+    parser.add_argument("--confidence-threshold", type=float, default=0.05, help="신뢰도 임계값")
     
     args = parser.parse_args()
     
     lecture_ids = [int(x.strip()) for x in args.lectures.split(",")]
     algorithms = [x.strip() for x in args.algorithms.split(",")] if args.algorithms else None
-    
+
+    # embedding_fn 설정
+    embedding_fn = None
+    embedding_algos = ['cosine_similarity', 'hybrid', 'structured_pdf']
+    needs_embedding = algorithms is None or any(a in embedding_algos for a in (algorithms or []))
+    if needs_embedding:
+        try:
+            from app.embedding_runner import get_embeddings_from_gpu
+            embedding_fn = get_embeddings_from_gpu
+            print("✅ Embedding 함수 로드됨 (GPU 서버)")
+        except Exception as e:
+            print(f"⚠️  Embedding 함수 로드 실패: {e}")
+
+    # llm_fn 설정
+    llm_fn = None
+    llm_algos = ['llm_semantic', 'llm_transcription']
+    needs_llm = algorithms is None or any(a in llm_algos for a in (algorithms or []))
+    if needs_llm:
+        try:
+            import os
+            from openai import OpenAI
+            client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+            def llm_fn(prompt: str) -> str:
+                response = client.chat.completions.create(
+                    model='gpt-4o-mini',
+                    messages=[{'role': 'user', 'content': prompt}],
+                    temperature=0
+                )
+                return response.choices[0].message.content
+            print("✅ LLM 함수 로드됨 (GPT-4o-mini)")
+        except Exception as e:
+            print(f"⚠️  LLM 함수 로드 실패: {e}")
+
     results = run_full_benchmark(
         base_dir=args.base_dir,
         lecture_ids=lecture_ids,
         algorithms=algorithms,
+        embedding_fn=embedding_fn,
+        llm_fn=llm_fn,
         grouping=args.grouping,
+        confidence_threshold=args.confidence_threshold,
         group_duration=args.group_duration,
     )
     

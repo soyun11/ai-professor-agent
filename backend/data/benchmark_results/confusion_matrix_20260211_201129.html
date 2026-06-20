@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Confusion Matrix by Threshold</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0; padding: 20px; background: #f8f9fa;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { text-align: center; color: #333; }
+        h2 { color: #333; border-bottom: 2px solid #4a90d9; padding-bottom: 10px; }
+        
+        .threshold-section {
+            background: white; padding: 20px; border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;
+        }
+        
+        .cm-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .cm-box { text-align: center; }
+        .cm-box h4 { margin: 0 0 10px 0; color: #555; }
+        
+        .confusion-matrix {
+            display: grid;
+            grid-template-columns: 80px 80px;
+            gap: 2px;
+            justify-content: center;
+        }
+        .cm-cell {
+            width: 80px; height: 60px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 18px;
+            border-radius: 4px;
+        }
+        .tp { background: #c8e6c9; color: #2e7d32; }
+        .tn { background: #c8e6c9; color: #2e7d32; }
+        .fp { background: #ffcdd2; color: #c62828; }
+        .fn { background: #ffcdd2; color: #c62828; }
+        
+        .cm-labels {
+            display: grid;
+            grid-template-columns: 80px 80px;
+            gap: 2px;
+            justify-content: center;
+            margin-top: 5px;
+            font-size: 12px; color: #666;
+        }
+        
+        .info-box {
+            background: #e3f2fd; padding: 15px; border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Threshold별 혼동행렬 (Confusion Matrix)</h1>
+        
+        <div class="info-box">
+            <strong>혼동행렬 해석:</strong><br>
+            - <span style="color:#2e7d32">TP (True Positive)</span>: 정확하게 매칭됨 (예측 O, 실제 O)<br>
+            - <span style="color:#2e7d32">TN (True Negative)</span>: 정확하게 제외됨 (예측 X, 실제 X)<br>
+            - <span style="color:#c62828">FP (False Positive)</span>: 잘못 매칭됨 (예측 O, 실제 X)<br>
+            - <span style="color:#c62828">FN (False Negative)</span>: 놓침 (예측 X, 실제 O)
+        </div>
+
+        <div class="threshold-section">
+            <h2>Threshold = 0.3</h2>
+            <p style="color:#666">confidence ≥ 0.3 인 경우만 매칭으로 판정</p>
+            <div class="cm-grid">
+
+                <div class="cm-box">
+                    <h4>1. Exact</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+                <div class="cm-box">
+                    <h4>2. Cosine</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+                <div class="cm-box">
+                    <h4>3. Hybrid(E&C)</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+                <div class="cm-box">
+                    <h4>4. LLM-text</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="threshold-section">
+            <h2>Threshold = 0.4</h2>
+            <p style="color:#666">confidence ≥ 0.4 인 경우만 매칭으로 판정</p>
+            <div class="cm-grid">
+
+                <div class="cm-box">
+                    <h4>1. Exact</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+                <div class="cm-box">
+                    <h4>2. Cosine</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+                <div class="cm-box">
+                    <h4>3. Hybrid(E&C)</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+                <div class="cm-box">
+                    <h4>4. LLM-text</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="threshold-section">
+            <h2>Threshold = 0.5</h2>
+            <p style="color:#666">confidence ≥ 0.5 인 경우만 매칭으로 판정</p>
+            <div class="cm-grid">
+
+                <div class="cm-box">
+                    <h4>1. Exact</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+                <div class="cm-box">
+                    <h4>2. Cosine</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+                <div class="cm-box">
+                    <h4>3. Hybrid(E&C)</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+                <div class="cm-box">
+                    <h4>4. LLM-text</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="threshold-section">
+            <h2>Threshold = 0.6</h2>
+            <p style="color:#666">confidence ≥ 0.6 인 경우만 매칭으로 판정</p>
+            <div class="cm-grid">
+
+                <div class="cm-box">
+                    <h4>1. Exact</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+                <div class="cm-box">
+                    <h4>2. Cosine</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+                <div class="cm-box">
+                    <h4>3. Hybrid(E&C)</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+                <div class="cm-box">
+                    <h4>4. LLM-text</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="threshold-section">
+            <h2>Threshold = 0.7</h2>
+            <p style="color:#666">confidence ≥ 0.7 인 경우만 매칭으로 판정</p>
+            <div class="cm-grid">
+
+                <div class="cm-box">
+                    <h4>1. Exact</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+                <div class="cm-box">
+                    <h4>2. Cosine</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+                <div class="cm-box">
+                    <h4>3. Hybrid(E&C)</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+                <div class="cm-box">
+                    <h4>4. LLM-text</h4>
+                    <div class="confusion-matrix">
+                        <div class="cm-cell tp">TP<br><small>-</small></div>
+                        <div class="cm-cell fp">FP<br><small>-</small></div>
+                        <div class="cm-cell fn">FN<br><small>-</small></div>
+                        <div class="cm-cell tn">TN<br><small>-</small></div>
+                    </div>
+                    <div class="cm-labels">
+                        <span>Pred: Yes</span>
+                        <span>Pred: No</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,74 @@
+{
+  "timestamp": "20260409_203646",
+  "params": {
+    "lecture_ids": [
+      1,
+      2,
+      3
+    ],
+    "algorithms": [
+      "llm_semantic"
+    ],
+    "grouping": "duration",
+    "group_duration": 30.0,
+    "confidence_threshold": 0.05,
+    "tolerance": 10.0
+  },
+  "lecture_results": [
+    {
+      "lecture_id": 1,
+      "num_pages": 23,
+      "num_segments": 68,
+      "num_ground_truth": 23,
+      "results": {
+        "llm_semantic": {
+          "error": "LLM function not provided",
+          "metrics": null
+        }
+      },
+      "error": null
+    },
+    {
+      "lecture_id": 2,
+      "num_pages": 26,
+      "num_segments": 59,
+      "num_ground_truth": 26,
+      "results": {
+        "llm_semantic": {
+          "error": "LLM function not provided",
+          "metrics": null
+        }
+      },
+      "error": null
+    },
+    {
+      "lecture_id": 3,
+      "num_pages": 43,
+      "num_segments": 72,
+      "num_ground_truth": 40,
+      "results": {
+        "llm_semantic": {
+          "error": "LLM function not provided",
+          "metrics": null
+        }
+      },
+      "error": null
+    }
+  ],
+  "summary": {
+    "evaluations": {
+      "llm_semantic": {
+        "error": "No valid results",
+        "num_lectures": 0
+      }
+    },
+    "rankings": {
+      "by_f1": [],
+      "by_auc": []
+    },
+    "best_algorithm": {
+      "by_f1": null,
+      "by_auc": null
+    }
+  }
+}

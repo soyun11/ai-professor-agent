@@ -25,10 +25,22 @@ Thumbs.db
 .vscode/
 .idea/
 
-# ===== Data (optional) =====
-uploads/
-data/
+# ===== DB / 업로드 원본 =====
+backend/app.db
+backend/audio.json
+
+# ===== 강의 데이터 (가공 결과물 + 원본 미디어) =====
+backend/lectures/*/*
+backend/data/lectures/*/*
+!backend/lectures/*/ground_truth.json
+!backend/data/lectures/*/ground_truth.json
+
+# 원본 업로드 파일
 *.pdf
 *.mp3
 *.wav
 *.m4a
+
+# ===== DB 파일 추가 발견분 =====
+backend/data/database.db
+*.db

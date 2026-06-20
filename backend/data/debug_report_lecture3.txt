@@ -1,0 +1,193 @@
+
+================================================================================
+  Lecture 3 | tolerance=±30초 | benchmark_20260409_201224.json
+================================================================================
+  Page |      예측 |      정답 |     오차 |    신뢰도 | 결과 | 실패 이유
+  ---------------------------------------------------------------------------
+     1 |   00:00 |   00:00 |     0s |  0.500 | ✅  | 
+     2 |   03:14 |   01:14 |   120s |  0.092 | ❌  | 오차 너무 큼 (120s) → 잘못된 세그먼트 매칭
+     3 |   04:05 |   05:10 |    64s |  0.300 | ❌  | 보간값 (키워드 매칭 실패 → 선형 추정)
+     6 |   06:39 |   06:10 |    29s |  0.300 | ✅  | 
+     7 |   07:30 |   07:07 |    23s |  0.300 | ✅  | 
+     8 |   08:21 |   07:54 |    28s |  0.103 | ✅  | 
+     9 |   10:08 |   08:37 |    91s |  0.118 | ❌  | 오차 초과 (91s > 30s) → 키워드 부족
+    10 |   11:58 |   10:45 |    74s |  0.148 | ❌  | 오차 초과 (74s > 30s) → 키워드 부족
+    11 |   12:34 |   12:02 |    32s |  0.071 | ❌  | 오차 초과 (32s > 30s) → 키워드 부족
+    12 |   13:09 |   12:44 |    25s |  0.300 | ✅  | 
+    13 |   13:44 |   13:19 |    25s |  0.300 | ✅  | 
+    14 |   14:19 |   14:23 |     4s |  0.300 | ✅  | 
+    15 |   14:54 |   14:50 |     4s |  0.097 | ✅  | 
+    16 |   15:32 |   15:16 |    16s |  0.300 | ✅  | 
+    17 |   16:10 |   16:02 |     9s |  0.300 | ✅  | 
+    18 |   16:48 |   17:13 |    24s |  0.300 | ✅  | 
+    19 |   17:26 |   17:52 |    25s |  0.066 | ✅  | 
+    20 |   18:26 |   18:05 |    21s |  0.300 | ✅  | 
+    21 |   19:26 |   19:26 |     0s |  0.300 | ✅  | 
+    23 |   21:25 |   21:17 |     8s |  0.300 | ✅  | 
+    24 |   22:24 |   22:44 |    19s |  0.300 | ✅  | 
+    25 |   23:24 |   23:47 |    23s |  0.300 | ✅  | 
+    26 |   24:23 |   25:47 |    83s |  0.070 | ❌  | 오차 초과 (83s > 30s) → 키워드 부족
+    27 |   26:25 |   27:41 |    75s |  0.300 | ❌  | 보간값 (키워드 매칭 실패 → 선형 추정)
+    28 |   28:28 |   28:18 |    10s |  0.068 | ✅  | 
+    29 |   29:34 |   28:31 |    64s |  0.089 | ❌  | 오차 초과 (64s > 30s) → 키워드 부족
+    30 |   30:25 |   28:45 |   101s |  0.300 | ❌  | 보간값 (키워드 매칭 실패 → 선형 추정)
+    31 |   31:16 |   30:39 |    37s |  0.300 | ❌  | 보간값 (키워드 매칭 실패 → 선형 추정)
+    32 |   32:07 |   32:26 |    19s |  0.300 | ✅  | 
+    33 |   32:58 |   31:47 |    71s |  0.300 | ❌  | 보간값 (키워드 매칭 실패 → 선형 추정)
+    34 |   33:49 |   32:31 |    78s |  0.300 | ❌  | 보간값 (키워드 매칭 실패 → 선형 추정)
+    35 |   34:39 |   33:12 |    88s |  0.300 | ❌  | 보간값 (키워드 매칭 실패 → 선형 추정)
+    36 |   35:30 |   35:10 |    21s |  0.300 | ✅  | 
+    37 |   36:21 |   35:40 |    42s |  0.081 | ❌  | 오차 초과 (42s > 30s) → 키워드 부족
+    38 |   37:27 |   37:19 |     8s |  0.300 | ✅  | 
+    39 |   38:33 |   38:14 |    19s |  0.067 | ✅  | 
+    40 |   39:20 |   38:49 |    32s |  0.300 | ❌  | 보간값 (키워드 매칭 실패 → 선형 추정)
+    41 |   40:07 |   39:39 |    29s |  0.300 | ✅  | 
+    42 |   40:55 |   39:59 |    56s |  0.300 | ❌  | 보간값 (키워드 매칭 실패 → 선형 추정)
+    43 |   41:42 |   40:25 |    78s |  0.500 | ❌  | 경계값 (시작/끝 고정값)
+================================================================================
+  F1=0.575 | P=0.575 | R=0.575 | AUC=0.566
+  TP=23 | FP=17 | FN=17 | 총 40페이지
+================================================================================
+
+
+################################################################################
+  실패 페이지 상세 분석 (Lecture 3)
+################################################################################
+
+  ── Page 2 ──────────────────────────────────────────
+  원인: 오차 너무 큼 (120s) → 잘못된 세그먼트 매칭
+  PDF  키워드 (15개): 1500, 16, 20, 32, 40, 64, address, any, app, at, bit, bits, bytes, checksum, data
+  정답 근처 음성 키워드 (01:14 ±60s): 15, 20, 60, icmp, ip, sdn, 개선, 결과, 결정, 계산, 계층, 곱하기, 그램, 기능, 길이
+  → 공통 키워드: 20, ip
+  예측 근처 음성 키워드 (03:14 ±60s): 1500, 16, 64, don, ecn, eip, flag, fragment, id, ip, ipv, mtu, offset, tcp, traceroute
+  → 공통 키워드: 1500, 16, 64, ecn, fragment, ip, offset, tcp, ttl, udp
+
+  ── Page 3 ──────────────────────────────────────────
+  원인: 보간값 (키워드 매칭 실패 → 선형 추정)
+  PDF  키워드 (15개): 00000001, 11, 11011111, 32, 802, 802.11, address, addressing, and, associated, between, bit, connection, decimal, dotted
+  정답 근처 음성 키워드 (05:10 ±60s): 20, 32, 40, ifconfig, ip, ipconfig, ipv, tcp, 가능, 경우, 구분, 기록, 길이, 내용, 다음
+  → 공통 키워드: 32, ip
+  예측 근처 음성 키워드 (04:05 ±60s): 16, 20, 40, don, flag, fragment, id, ip, ipv, offset, tcp, udp, 가운데, 개선, 계층
+  → 공통 키워드: ip
+
+  ── Page 9 ──────────────────────────────────────────
+  원인: 오차 초과 (91s > 30s) → 키워드 부족
+  PDF  키워드 (15개): 00000000, 00010000, 00010111, 11001000, 23, a.b.c.d, address, addressing, arbitrary, bits, cider, cidr, classless, format, host
+  정답 근처 음성 키워드 (08:37 ±60s): 16, 24, 30, cidr, class, domain, inter, ip, list, routing, 고민, 구간, 구분, 그때, 노테이션
+  → 공통 키워드: cidr, ip, routing
+  예측 근처 음성 키워드 (10:08 ±60s): 16, 16.0, 23, bgp, cidr, class, ip, kt, list, notation, portion, subnet, 고민, 구분, 나머지
+  → 공통 키워드: 23, cidr, ip, portion, subnet
+
+  ── Page 10 ──────────────────────────────────────────
+  원인: 오차 초과 (74s > 30s) → 키워드 부족
+  PDF  키워드 (15개): 1., actually, address, addresses, and, as, by, coded, config, configuration, dhcp, does, dynamic, dynamically, e.g.
+  정답 근처 음성 키워드 (10:45 ±60s): 16, 16.0, 23, bgp, cidr, configuration, dhcp, dynamic, host, ip, kt, lan, portion, protocol, subnet
+  → 공통 키워드: configuration, dhcp, dynamic, host, ip, protocol
+  예측 근처 음성 키워드 (11:58 ±60s): configuration, dhcp, discover, dynamic, host, ip, lan, offer, protocol, 가정, 갱신, 공유, 기본, 네임, 네트워크
+  → 공통 키워드: configuration, dhcp, dynamic, host, ip, protocol
+
+  ── Page 11 ──────────────────────────────────────────
+  원인: 오차 초과 (32s > 30s) → 키워드 부족
+  PDF  키워드 (15개): ack, address, addresses, allows, broadcasts, can, configuration, connected, dhcp, discover, dynamic, dynamically, for, from, goal
+  정답 근처 음성 키워드 (12:02 ±60s): configuration, dhcp, discover, dynamic, host, ip, lan, offer, protocol, 가정, 갱신, 공유, 기본, 네임, 네트워크
+  → 공통 키워드: configuration, dhcp, discover, dynamic, host, ip, offer, protocol
+  예측 근처 음성 키워드 (12:34 ±60s): configuration, dhcp, discover, dynamic, host, ip, lan, offer, protocol, 가정, 갱신, 공유, 기본, 네임, 네트워크
+  → 공통 키워드: configuration, dhcp, discover, dynamic, host, ip, offer, protocol
+
+  ── Page 26 ──────────────────────────────────────────
+  원인: 오차 초과 (83s > 30s) → 키워드 부족
+  PDF  키워드 (15개): 3345, 5001, 80, addr, address, arrives, changes, datagram, destination, from, host, lan, layer, nat, network
+  정답 근처 음성 키워드 (25:47 ±60s): 3345, ip, nat, net, tcp, 가능, 가지, 강제, 계층, 공유, 과정, 관점, 기능, 기준, 네트워크
+  → 공통 키워드: 3345, nat
+  예측 근처 음성 키워드 (24:23 ±60s): 10, 10.1, 13876297, 3345, 5001, 가능, 가지, 공유, 과정, 그림, 기준, 다음, 도착, 때문, 라우터
+  → 공통 키워드: 3345, 5001
+
+  ── Page 27 ──────────────────────────────────────────
+  원인: 보간값 (키워드 매칭 실패 → 선형 추정)
+  PDF  키워드 (15개): address, and, argument, be, been, behind, but, by, cellular, client, connect, controversial, device, end, extensively
+  정답 근처 음성 키워드 (27:41 ±60s): 128, 20, 32, 40, ip, ipv, kt, lg, lte, nat, sk, tcp, 공간, 공유, 공인
+  → 공통 키워드: ipv, nat
+  예측 근처 음성 키워드 (26:25 ±60s): ip, kt, lg, lte, nat, net, sk, tcp, 가지, 강제, 계층, 공유, 관점, 기능, 기술
+  → 공통 키워드: nat
+
+  ── Page 29 ──────────────────────────────────────────
+  원인: 오차 초과 (64s > 30s) → 키워드 부족
+  PDF  키워드 (15개): 128, addresses, among, as, at, available, bit, checksum, compared, concept, datagram, datagrams, defined, flow, flow.
+  정답 근처 음성 키워드 (28:31 ±60s): 128, 20, 32, 40, checksum, fragmentation, ip, ipv, nat, onlimits, option, tcp, tos, ttl, 개념
+  → 공통 키워드: 128, checksum, fragmentation, ipv
+  예측 근처 음성 키워드 (29:34 ±60s): 128, 20, 40, basic, checksum, extended, fragmentation, ipv, max, next, onlimits, option, tcp, tos, ttl
+  → 공통 키워드: 128, checksum, fragmentation, ipv, next
+
+  ── Page 30 ──────────────────────────────────────────
+  원인: 보간값 (키워드 매칭 실패 → 선형 추정)
+  PDF  키워드 (15개): addr, all, among, and, as, be, can, carried, contexts, datagram, days, dest, extensively, fields, flag
+  정답 근처 음성 키워드 (28:45 ±60s): 128, 20, 32, 40, checksum, fragmentation, ipv, onlimits, option, tcp, tos, ttl, 가정, 개념, 계층
+  → 공통 키워드: ipv, tcp
+  예측 근처 음성 키워드 (30:25 ±60s): basic, checksum, extended, fragmentation, ip, ipv, lte, max, next, onlimits, option, ttl, 가능, 가정, 가지
+  → 공통 키워드: ipv
+
+  ── Page 31 ──────────────────────────────────────────
+  원인: 보간값 (키워드 매칭 실패 → 선형 추정)
+  PDF  키워드 (15개): and, as, connecting, connects, datagram, encapsulation, ethernet, frame, in, ipv, layer, link, network, payload, routers
+  정답 근처 음성 키워드 (30:39 ±60s): basic, checksum, extended, ip, ipv, lte, max, next, 가능, 가정, 가지, 기능, 기본, 기술, 내용
+  → 공통 키워드: ipv
+  예측 근처 음성 키워드 (31:16 ±60s): extended, ip, ipv, lte, max, 가능, 가지, 기능, 기본, 기술, 내용, 네트워크, 대로, 동시, 듀얼
+  → 공통 키워드: ipv
+
+  ── Page 33 ──────────────────────────────────────────
+  원인: 보간값 (키워드 매칭 실패 → 선형 추정)
+  PDF  키워드 (15개): addresses, and, connecting, data, dest, destination, flow, inside, ipv, layer, logical, network, note, physical, routers
+  정답 근처 음성 키워드 (31:47 ±60s): ip, ipv, lte, 가지, 기본, 기술, 내용, 네트워크, 논리, 대로, 듀얼, 라우터, 레이어, 링크, 실제
+  → 공통 키워드: ipv
+  예측 근처 음성 키워드 (32:58 ±60s): ipv, lte, 검색, 구글, 기관, 기술, 네트워크, 논리, 단말기, 도입, 동시, 듀얼, 때문, 라우터, 보급
+  → 공통 키워드: ipv
+
+  ── Page 34 ──────────────────────────────────────────
+  원인: 보간값 (키워드 매칭 실패 → 선형 추정)
+  PDF  키워드 (15개): 0.04, 0.09, 04, 09, 14, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017
+  정답 근처 음성 키워드 (32:31 ±60s): ipv, lte, 검색, 구글, 기술, 네트워크, 논리, 단말기, 대로, 도입, 동시, 듀얼, 라우터, 레이어, 링크
+  → 공통 키워드: ipv
+  예측 근처 음성 키워드 (33:49 ±60s): 20, ipv, 가지, 검색, 공부, 공유, 구글, 구조, 기관, 기본, 기술, 다음, 단말기, 도입, 동시
+  → 공통 키워드: ipv
+
+  ── Page 35 ──────────────────────────────────────────
+  원인: 보간값 (키워드 매칭 실패 → 선형 추정)
+  PDF  키워드 (15개): 25, 30, access, adoption, all, and, application, are, capable, changes, clients, counting, deployment, domains, for
+  정답 근처 음성 키워드 (33:12 ±60s): ipv, 검색, 구글, 구조, 기관, 기술, 네트워크, 논리, 단말기, 도입, 동시, 때문, 라우터, 보급, 브라우저
+  → 공통 키워드: ipv
+  예측 근처 음성 키워드 (34:39 ±60s): 20, ipv, 가지, 계층, 공부, 공유, 관점, 구글, 구조, 기관, 기본, 기점, 내용, 네트워크, 다음
+  → 공통 키워드: ipv
+
+  ── Page 37 ──────────────────────────────────────────
+  원인: 오차 초과 (42s > 30s) → 키워드 부족
+  PDF  키워드 (15개): application, balancers, caches, cdn, cdns, cellular, center, corporate, data, datacenter, enterprise, everywhere, firewalls, global, home
+  정답 근처 음성 키워드 (35:40 ±60s): cdn, ids, nat, 가지, 검사, 계층, 공유, 관점, 구글, 기업, 기점, 내용, 네트워크, 다운, 다음
+  → 공통 키워드: cdn, ids, nat
+  예측 근처 음성 키워드 (36:21 ±60s): cdn, ids, ip, nat, 가지, 검사, 계층, 공유, 관점, 구글, 그림, 기업, 내용, 네트워크, 다운
+  → 공통 키워드: cdn, ids, nat
+
+  ── Page 40 ──────────────────────────────────────────
+  원인: 보간값 (키워드 매칭 실패 → 선형 추정)
+  PDF  키워드 (15개): 1958, 25, and, architectural, architecture, argue, at, beliefs, believes, but, by, community, complexity, connectivity, cornerstone
+  정답 근처 음성 키워드 (38:49 ±60s): caching, firewall, ip, nat, tcp, 가상, 가운데, 가지, 계층, 구조, 구현, 기능, 기본, 기술, 내용
+  → 공통 키워드: ip
+  예측 근처 음성 키워드 (39:20 ±60s): ip, tcp, 가운데, 계층, 관점, 구조, 구현, 기능, 기본, 끝단, 내용, 네트워크, 다음, 단말기, 단순
+  → 공통 키워드: ip
+
+  ── Page 42 ──────────────────────────────────────────
+  원인: 보간값 (키워드 매칭 실패 → 선형 추정)
+  PDF  키워드 (15개): 1981, against, an, and, application, arg, argument, as, at, be, ble, ble., by, call, can
+  정답 근처 음성 키워드 (39:59 ±60s): and, ip, tcp, 가운데, 가지, 계층, 관점, 구조, 구현, 기능, 기본, 끝단, 네트워크, 다음, 단말기
+  → 공통 키워드: and
+  예측 근처 음성 키워드 (40:55 ±60s): and, ip, 가운데, 가지, 결합, 계층, 과정, 관점, 구조, 구현, 기능, 기본, 끝단, 내용, 네트워크
+  → 공통 키워드: and
+
+  ── Page 43 ──────────────────────────────────────────
+  원인: 경계값 (시작/끝 고정값)
+  PDF  키워드 (15개): 20, 2005, application, at, century, computing, devices, edge, infrastructure, intelligence, internet, level, massive, net, network
+  정답 근처 음성 키워드 (40:25 ±60s): and, ip, tcp, 가운데, 가지, 결합, 계층, 과정, 관점, 구조, 구현, 기능, 기본, 끝단, 내용
+  → 공통 키워드: ❌ 없음 (매칭 불가)
+  예측 근처 음성 키워드 (41:42 ±60s): and, ip, 가지, 결합, 계층, 과정, 구조, 구현, 기능, 내용, 네트워크, 다음, 단말기, 등장, 디바이스
+  → 공통 키워드: ❌ 없음
+
+################################################################################

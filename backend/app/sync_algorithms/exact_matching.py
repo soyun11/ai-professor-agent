@@ -43,76 +43,36 @@ class ExactMatchingAlgorithm(BaseSyncAlgorithm):
         self,
         pages: List[PageData],
         segments: List[TranscriptSegment],
-        scoring_method: str = "overlap_ratio",
-        min_keyword_length: int = 2,
         **kwargs
     ) -> np.ndarray:
-        """키워드 기반 유사도 행렬 계산
+        from sklearn.feature_extraction.text import TfidfVectorizer
         
-        Args:
-            pages: 페이지 데이터 리스트
-            segments: 자막 세그먼트 리스트
-            scoring_method: 점수 계산 방법
-                - "overlap_count": 겹치는 키워드 개수
-                - "overlap_ratio": 겹치는 키워드 비율 (자카드 유사도)
-                - "weighted": 키워드 빈도 가중치 적용
-            min_keyword_length: 최소 키워드 길이
-            
-        Returns:
-            유사도 행렬 (num_pages x num_segments)
-        """
         num_pages = len(pages)
         num_segments = len(segments)
         
-        # 키워드 추출
-        page_keywords = []
-        for page in pages:
-            if not page.keywords:
-                page.keywords = TextProcessor.extract_keywords(
-                    page.text, min_length=min_keyword_length
-                )
-            page_keywords.append(page.keywords)
+        # 전체 텍스트 수집
+        page_texts = [p.text for p in pages]
+        seg_texts = [s.text for s in segments]
+        all_texts = page_texts + seg_texts
         
-        segment_keywords = []
-        for seg in segments:
-            if not seg.keywords:
-                seg.keywords = TextProcessor.extract_keywords(
-                    seg.text, min_length=min_keyword_length
-                )
-            segment_keywords.append(seg.keywords)
+        # TF-IDF 벡터화 (페이지+세그먼트 합쳐서 학습)
+        vectorizer = TfidfVectorizer(
+            tokenizer=lambda t: list(TextProcessor.extract_keywords(t)),
+            lowercase=False,
+            min_df=1,
+            sublinear_tf=True  # 빈도수 log 스케일링
+        )
+    
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            tfidf_matrix = vectorizer.fit_transform(all_texts)
         
-        # 유사도 행렬 계산
-        similarity_matrix = np.zeros((num_pages, num_segments))
+        page_vecs = tfidf_matrix[:num_pages]
+        seg_vecs = tfidf_matrix[num_pages:]
         
-        for i in range(num_pages):
-            p_kw = page_keywords[i]
-            if not p_kw:
-                continue
-                
-            for j in range(num_segments):
-                s_kw = segment_keywords[j]
-                if not s_kw:
-                    continue
-                
-                if scoring_method == "overlap_count":
-                    # 겹치는 키워드 개수
-                    score = len(p_kw & s_kw)
-                    
-                elif scoring_method == "overlap_ratio":
-                    # 자카드 유사도
-                    score = SimilarityCalculator.jaccard_similarity(p_kw, s_kw)
-                    
-                elif scoring_method == "weighted":
-                    # 가중치 적용 (페이지 키워드 대비 매칭 비율)
-                    common = p_kw & s_kw
-                    if common:
-                        score = len(common) / len(p_kw) * (1 + 0.1 * len(common))
-                    else:
-                        score = 0
-                else:
-                    score = len(p_kw & s_kw)
-                
-                similarity_matrix[i, j] = score
+        # 코사인 유사도 계산
+        similarity_matrix = (page_vecs @ seg_vecs.T).toarray()
         
         return similarity_matrix
     
