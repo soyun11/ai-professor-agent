@@ -58,8 +58,18 @@ from typing import List, Dict
 from .ocr_runner import ocr_pdf_with_gpu
 
 load_dotenv()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """앱 시작/종료 시 실행되는 컨텍스트 매니저"""
+    # 시작 시: DB 초기화
+    init_db()
+    print("Database initialized.")
+
+    yield # 앱 실행 중
+
 # FastAPI 애플리케이션 인스턴스 생성
-app = FastAPI(title="AI Agent for Professors - MVP Backend")
+app = FastAPI(title="AI Agent for Professors - MVP Backend", lifespan=lifespan)
 
 # 정적 파일 제공: /files 경로로 BASE_DIR 폴더 내용 서빙
 app.mount("/files", StaticFiles(directory=BASE_DIR), name="files")
@@ -82,15 +92,6 @@ from .sync_experiments import register_experiment_routes
 from .sync_algorithms.base import TextProcessor
 
 register_experiment_routes(app, BASE_DIR) # 실험용 라우트 등록
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """앱 시작/종료 시 실행되는 컨텍스트 매니저"""
-    # 시작 시: DB 초기화
-    init_db()
-    print("Database initialized.")
-    
-    yield # 앱 실행 중
 
 @app.get("/health")
 def health():
@@ -299,15 +300,7 @@ def transcribe(lecture_id: int, session: Session = Depends(get_session)):
     if not audio_abs.exists(): # 파일이 디스크에 실제로 없으면
         raise HTTPException(status_code=404, detail=f"오디오 파일을 찾을 수 없습니다: {asset.audio_path}")
 
-    # 5. 기본 transcript 데이터 삭제 (재실행 시 중복 방지)
-    old = session.exec(
-        select(TranscriptSegment).where(TranscriptSegment.lecture_id == lecture_id)
-    ).all()
-    
-    # 6. 기존 데이터 하나씩 삭제
-    for row in old:
-        session.delete(row) # 세션에 삭제 예정 표시
-    session.commit() # DB에 실제로 삭제 (DELETE 쿼리 실행)
+    # 5~6. 기존 transcript 삭제는 STT 성공 후로 미룸 (실패 시 기존 자막 보존)
 
     # 7. transcript.json 저장 위치 결정
     out_dir = _lecture_data_dir(lecture_id)        
@@ -335,7 +328,14 @@ def transcribe(lecture_id: int, session: Session = Depends(get_session)):
     # 9. 결과를 DB에 저장
     # payload에서 segments 추출(없으면 빈 리스트)
     segments = payload.get("segments", [])
-    
+
+    # STT 성공 후에만 기존 transcript 삭제 (아래 INSERT와 같은 commit으로 교체)
+    old = session.exec(
+        select(TranscriptSegment).where(TranscriptSegment.lecture_id == lecture_id)
+    ).all()
+    for row in old:
+        session.delete(row)
+
     # 10. 각 세그먼트를 DB에 추가
     for s in segments:
         # TranscriptSegment 객체 생성
@@ -1249,15 +1249,6 @@ def get_pages_info(lecture_id: int):
 # =============================================================================
 @app.post("/lectures/{lecture_id}/auto_sync")
 def auto_sync(lecture_id: int, session: Session = Depends(get_session)):
-    # 디버깅을 위한 코드 추가
-    print("=== SYNC DEBUG SNAPSHOT ===")
-    print("BASE_DIR:", BASE_DIR)
-    print("CWD:", os.getcwd())
-    print("pages_json_path:", pages_json_path, "exists:", pages_json_path.exists())
-    print("pages_count:", len(pages), "first_page:", pages[0].get("page") if pages else None)
-    print("transcript_count:", len(transcript_rows), "first_start:", float(transcript_rows[0].start) if transcript_rows else None)
-    print("===========================")
-
     """
     임베딩 + 키워드 스포팅 + 신뢰도 기반 보간법을 활용한 PDF 페이지-음성 자막 자동 동기화
 
